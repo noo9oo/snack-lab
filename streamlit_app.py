@@ -11,13 +11,13 @@ import plotly.graph_objects as go
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="정책기획팀 Snack Lab",
-    page_icon="🍪",
+    page_icon="🍬",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
 
 # ─────────────────────────────────────────────
-# Custom CSS (핑크 캔디 테마, 글래스모피즘, 별사탕 플로팅)
+# Custom CSS (라이트 옐로우 테마, 나눔고딕 폰트 적용, 글래스모피즘)
 # ─────────────────────────────────────────────
 _font_path = pathlib.Path(__file__).parent / "fonts" / "Super Funtime.ttf"
 _font_b64 = base64.b64encode(_font_path.read_bytes()).decode() if _font_path.exists() else ""
@@ -30,8 +30,9 @@ _font_css = f"""@font-face {{
 
 st.markdown("""
 <style>
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css');
-html, body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #fdfafb; }
+/* 나눔고딕 웹폰트 임포트 */
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
+html, body { font-family: 'Nanum Gothic', -apple-system, sans-serif; background-color: #fdfdfa; }
 .block-container { max-width: 520px; padding: 0 1rem 4rem; }
 header[data-testid="stHeader"] { background: transparent; }
 
@@ -45,22 +46,21 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
     border: 1px solid rgba(255, 255, 255, 0.4) !important; color: #475569 !important;
 }
 
-/* 1 & 6. 3D 플로팅 메인 로고 배너 & 별사탕 에셋 */
+/* 3D 플로팅 메인 로고 배너 & 별사탕 에셋 (테두리 제거) */
 .logo-banner {
     position: relative; text-align: center; padding: 25px 20px;
     background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-radius: 20px; margin: 0 -1rem 1.2rem;
-    border: 1px solid rgba(240, 128, 162, 0.15);
-    box-shadow: 0 8px 32px 0 rgba(240, 128, 162, 0.05);
+    border: none; /* 테두리 제거 */
+    box-shadow: 0 8px 32px 0 rgba(251, 192, 45, 0.05);
     overflow: hidden;
 }
-/* 별사탕 글래스 & 플로팅 효과 */
+
+/* 별사탕 글래스 & 플로팅 효과 (라이트 옐로우) */
 .star-candy {
-    position: absolute; font-size: 26px;
-    color: rgba(240, 128, 162, 0.8);
-    text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 2px 4px rgba(240,128,162,0.3);
-    filter: drop-shadow(0 3px 5px rgba(240,128,162,0.2));
+    position: absolute;
+    filter: drop-shadow(0 3px 5px rgba(251, 192, 45, 0.3));
     user-select: none;
 }
 .star-left { top: 20%; left: 8%; animation: floatStar 3.5s ease-in-out infinite; }
@@ -70,94 +70,107 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
     50% { transform: translateY(-10px) rotate(15deg) scale(1.1); }
 }
 
-.logo-sub { font-size: 12px; font-weight: 700; color: #E86A92; letter-spacing: 1px; margin-bottom: 4px; }
+.logo-sub { font-size: 12px; font-weight: 700; color: #F57F17; letter-spacing: 1px; margin-bottom: 4px; }
 .logo-main { display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 2; position: relative; }
-/* 핑크 캔디 글씨 복원 */
+
+/* 글래스 & 플로팅 효과가 적용된 글자 */
+@keyframes floatLetter {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px) scale(1.02); }
+}
 .glass-letter {
     display: inline-block; position: relative;
-    font-size: 52px; font-weight: normal; font-family: 'SuperFuntime', 'Pretendard', sans-serif;
-    color: rgba(240, 128, 162, 0.9); padding: 0px 2px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(240,128,162,0.06) 40%, rgba(255,255,255,0.2) 100%);
+    font-size: 52px; font-weight: normal; font-family: 'SuperFuntime', 'Nanum Gothic', sans-serif;
+    color: rgba(251, 192, 45, 0.95); padding: 0px 2px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(251,192,45,0.08) 40%, rgba(255,255,255,0.3) 100%);
     -webkit-background-clip: padding-box; background-clip: padding-box;
-    text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 -1px 1px rgba(240,128,162,0.15), 0 4px 12px rgba(240,128,162,0.25);
-    filter: drop-shadow(0 4px 8px rgba(240,128,162,0.2)); -webkit-text-stroke: 0.5px rgba(240,128,162,0.3);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; line-height: 1;
+    text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 -1px 1px rgba(251,192,45,0.2), 0 4px 12px rgba(251,192,45,0.3);
+    filter: drop-shadow(0 4px 8px rgba(251,192,45,0.25)); -webkit-text-stroke: 0.5px rgba(251,192,45,0.4);
+    cursor: default; line-height: 1;
+    animation: floatLetter 3s ease-in-out infinite;
 }
-.glass-letter:hover { transform: translateY(-3px) scale(1.05); color: rgba(240, 128, 162, 1); filter: drop-shadow(0 6px 14px rgba(240,128,162,0.4)); }
-.glass-space { width: 14px; }
-/* 5. 텍스트 복원 */
-.logo-bottom-text { font-size: 12px; font-weight: 500; color: #A08C93; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
+.glass-letter:nth-child(1) { animation-delay: 0.0s; }
+.glass-letter:nth-child(2) { animation-delay: 0.1s; }
+.glass-letter:nth-child(3) { animation-delay: 0.2s; }
+.glass-letter:nth-child(4) { animation-delay: 0.3s; }
+.glass-letter:nth-child(5) { animation-delay: 0.4s; }
+.glass-letter:nth-child(7) { animation-delay: 0.5s; }
+.glass-letter:nth-child(8) { animation-delay: 0.6s; }
+.glass-letter:nth-child(9) { animation-delay: 0.7s; }
 
-/* 4. 타이틀 밑으로 이동한 공지 알림판 */
+.glass-space { width: 14px; }
+.logo-bottom-text { font-size: 13px; font-weight: 700; color: #8D6E63; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
+
+/* 공지 알림판 */
 .notice-box {
     padding: 14px 18px; margin: 0 -0.5rem 1.8rem;
-    background: rgba(253, 242, 248, 0.65);
+    background: rgba(255, 253, 231, 0.65);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(240, 128, 162, 0.3);
-    border-radius: 14px; font-size: 13.5px; font-weight: 600; color: #BE185D;
+    border: 1px solid rgba(251, 192, 45, 0.3);
+    border-radius: 14px; font-size: 13.5px; font-weight: 700; color: #F57F17;
     display: flex; align-items: center; gap: 8px;
-    box-shadow: 0 4px 12px rgba(240, 128, 162, 0.05);
+    box-shadow: 0 4px 12px rgba(251, 192, 45, 0.05);
 }
 
 /* 섹션 타이틀 */
-.sec-title { font-size: 16px; font-weight: 700; margin: 1.8rem 0 0.8rem; display: flex; align-items: center; gap: 6px; color: #4A3E42; }
+.sec-title { font-size: 16px; font-weight: 800; margin: 1.8rem 0 0.8rem; display: flex; align-items: center; gap: 6px; color: #4E342E; }
 
 /* 카드 공통 글래스 */
 .snack-card, .req-card, .cpg-item {
-    background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 14px rgba(240, 128, 162, 0.04);
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.9); box-shadow: 0 4px 14px rgba(251, 192, 45, 0.06);
 }
 .snack-card { border-radius: 16px; padding: 14px; text-align: center; margin-bottom: 8px; }
 .snack-card img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #fff; }
-.snack-card .name { font-size: 13px; font-weight: 600; margin: 6px 0 2px; color: #4A3E42; }
-.snack-card .price { font-size: 11px; color: #A08C93; margin-bottom: 6px; }
+.snack-card .name { font-size: 13px; font-weight: 700; margin: 6px 0 2px; color: #4E342E; }
+.snack-card .price { font-size: 11px; color: #8D6E63; margin-bottom: 6px; font-weight: 700; }
 
-/* 3. 카테고리 태그 폰트 크기 축소 및 줄바꿈 방지 */
-.tag-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; margin-bottom: 6px; }
+/* 카테고리 태그 폰트 크기 축소 및 줄바꿈 방지 */
+.tag-container { display: flex; flex-wrap: nowrap; justify-content: center; gap: 3px; margin-bottom: 6px; overflow: hidden; }
 .tag {
-    display: inline-block; padding: 2px 7px; border-radius: 6px;
-    font-size: 9px; font-weight: 600; color: #fff; background: #E2ACB8;
-    white-space: nowrap; /* 줄바꿈 절대 방지 */
+    display: inline-block; padding: 2px 5px; border-radius: 6px;
+    font-size: 8px; font-weight: 800; color: #5D4037; background: #FFF59D;
+    white-space: nowrap;
 }
-/* 파스텔 핑크/피치 톤 컬러 팔레트 매핑 */
-.tag-단맛 { background: #F080A2; } .tag-짠맛 { background: #EDBE9A; color: #7A5C2E; }
-.tag-매운맛 { background: #E86A92; } .tag-쿠키_비스킷 { background: #DDA7B0; }
-.tag-스낵_칩 { background: #9DC8D6; color: #2C6E7A; } .tag-젤리_사탕 { background: #A7C5EB; color: #3A5B8C; }
-.tag-견과류 { background: #D5BCA2; color: #6E5336; } .tag-탄산음료 { background: #8BB8D4; }
-.tag-커피_차 { background: #BFA99B; } .tag-주스_드링크 { background: #F2B872; color: #8F5514; }
+/* 라이트 옐로우 / 웜톤 컬러 팔레트 매핑 */
+.tag-단맛 { background: #FFD54F; } .tag-짠맛 { background: #FFCC80; }
+.tag-매운맛 { background: #FFAB91; } .tag-쿠키_비스킷 { background: #FFE082; }
+.tag-스낵_칩 { background: #FFF59D; } .tag-젤리_사탕 { background: #C5E1A5; color: #33691E; }
+.tag-견과류 { background: #BCAAA4; color: #4E342E; } .tag-탄산음료 { background: #81D4FA; color: #01579B; }
+.tag-커피_차 { background: #D7CCC8; } .tag-주스_드링크 { background: #FFE082; color: #F57F17; }
 
 .req-card { border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.req-card .info h4 { font-size: 13px; font-weight: 600; margin: 0 0 4px 0; color: #4A3E42; }
-.req-card .info .meta { font-size: 11px; color: #A08C93; }
+.req-card .info h4 { font-size: 13px; font-weight: 700; margin: 0 0 4px 0; color: #4E342E; }
+.req-card .info .meta { font-size: 11px; color: #8D6E63; font-weight: 700;}
 
 .cpg-item { border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; padding: 10px; }
 .cpg-item img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
-.cpg-item .cpg-name { font-size: 12px; font-weight: 600; color: #4A3E42; }
-.cpg-item .cpg-price { font-size: 11px; color: #A08C93; }
+.cpg-item .cpg-name { font-size: 12px; font-weight: 700; color: #4E342E; }
+.cpg-item .cpg-price { font-size: 11px; color: #8D6E63; font-weight: 700; }
 
 .ai-result {
-    background: rgba(253, 242, 248, 0.5); border-radius: 16px; padding: 18px; border: 1px solid rgba(240, 128, 162, 0.3);
-    font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; color: #4A3E42;
+    background: rgba(255, 253, 231, 0.5); border-radius: 16px; padding: 18px; border: 1px solid rgba(251, 192, 45, 0.3);
+    font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; color: #4E342E; font-weight: 700;
 }
-.empty-zone { border: 1px dashed #E2ACB8; border-radius: 16px; padding: 35px 20px; text-align: center; color: #C4A2AC; font-size: 12.5px; }
+.empty-zone { border: 1px dashed #FBC02D; border-radius: 16px; padding: 35px 20px; text-align: center; color: #BCAAA4; font-size: 12.5px; font-weight: 700; }
 
-/* 버튼 공통 & 1. 프라이머리(제출) 버튼 핑크 톤 커스텀 */
+/* 버튼 공통 & 프라이머리(제출) 버튼 옐로우 톤 커스텀 */
 div[data-testid="stHorizontalBlock"] { gap: 6px; }
 .stButton > button {
-    border-radius: 10px !important; font-weight: 600 !important;
+    border-radius: 10px !important; font-weight: 800 !important;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
-.stButton > button:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 4px 12px rgba(240, 128, 162, 0.15) !important; }
+.stButton > button:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 4px 12px rgba(251, 192, 45, 0.15) !important; }
 .stButton > button:active { transform: translateY(1px) scale(0.98); }
 
-/* Primary 속성을 가진 버튼 색상 오버라이드 (핑크 그라데이션) */
+/* Primary 속성을 가진 버튼 색상 오버라이드 (옐로우 그라데이션) */
 button[kind="primary"] {
-    background: linear-gradient(135deg, #F080A2, #E86A92) !important;
-    border: none !important; color: white !important;
-    box-shadow: 0 4px 10px rgba(240, 128, 162, 0.2) !important;
+    background: linear-gradient(135deg, #FDE68A, #FBBF24) !important;
+    border: none !important; color: #4E342E !important;
+    box-shadow: 0 4px 10px rgba(251, 192, 45, 0.2) !important;
 }
-button[kind="primary"]:hover { background: linear-gradient(135deg, #E86A92, #D8567F) !important; }
-button[kind="primary"] p { color: white !important; }
+button[kind="primary"]:hover { background: linear-gradient(135deg, #FBBF24, #F59E0B) !important; }
+button[kind="primary"] p { color: #4E342E !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -302,11 +315,19 @@ with col_nav:
 
 if st.session_state.page == "main":
 
-    # ── 5 & 6. 로고 배너 (핑크색 3D 에셋 & 복원된 텍스트) ──
-    st.markdown("""
+    # ── 커스텀 라이트 옐로우 3D 별사탕 SVG 정의 ──
+    star_svg = """
+    <svg viewBox="0 0 24 24" width="28" height="28">
+        <path fill="#FFF59D" stroke="#FBC02D" stroke-width="1.5" stroke-linejoin="round"
+        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>
+    """
+
+    # ── 로고 배너 ──
+    st.markdown(f"""
     <div class="logo-banner">
-        <div class="star-candy star-left">⭐</div>
-        <div class="star-candy star-right">✨</div>
+        <div class="star-candy star-left">{star_svg}</div>
+        <div class="star-candy star-right">{star_svg}</div>
         <div class="logo-sub">정책기획팀</div>
         <div class="logo-main">
             <span class="glass-letter" data-char="S">S</span>
@@ -319,11 +340,11 @@ if st.session_state.page == "main":
             <span class="glass-letter" data-char="a">a</span>
             <span class="glass-letter" data-char="b">b</span>
         </div>
-        <p class="logo-bottom-text">🍪 최적의 간식조합 찾기</p>
+        <p class="logo-bottom-text">최적의 간식조합 찾기</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── 4. 타이틀 바로 밑으로 이동한 공지 알림판 ──
+    # ── 공지 알림판 ──
     st.markdown("""
     <div class="notice-box">
         <span>☕</span> 다음 다과 입고 예정일은 7월 1일입니다. 필요한 간식은 아래에 요청해 주세요.
@@ -331,7 +352,7 @@ if st.session_state.page == "main":
     """, unsafe_allow_html=True)
 
     # ── Section 1: 이달의 다과 피드백 ──
-    st.markdown('<div class="sec-title">🍪 이달의 다과 피드백</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">🍬 이달의 다과 피드백</div>', unsafe_allow_html=True)
 
     if not st.session_state.snacks:
         st.markdown('<div class="empty-zone">현재 비치된 다과 항목이 없습니다.<br>관리자 페이지에서 리스트를 업데이트해 주세요.</div>', unsafe_allow_html=True)
@@ -348,14 +369,14 @@ if st.session_state.page == "main":
                 tag_html += '</div>'
                 
                 st.markdown(f"""<div class="snack-card">
-                    <img src="{s['image']}" onerror="this.src='https://placehold.co/120x120/FADDE1/C4A2AC?text=Snack'">
+                    <img src="{s['image']}" onerror="this.src='https://placehold.co/120x120/FFF9C4/FBC02D?text=Snack'">
                     <div class="name">{pin_icon}{s['name']}</div>
                     <div class="price">{s['price']:,}원</div>
                     {tag_html}
                 </div>""", unsafe_allow_html=True)
                 
                 has_liked = s["id"] in st.session_state.user_likes
-                btn_label = f"🍪 추천함 ({s['likes']})" if has_liked else f"👍 재구매 ({s['likes']})"
+                btn_label = f"🍬 추천함 ({s['likes']})" if has_liked else f"👍 재구매 ({s['likes']})"
                 btn_type = "primary" if has_liked else "secondary"
                 
                 if st.button(btn_label, key=f"like_{s['id']}", use_container_width=True, type=btn_type):
@@ -376,7 +397,7 @@ if st.session_state.page == "main":
                     st.rerun()
 
     # ── Section 2: 간식 요청하기 ──
-    st.markdown('<div class="sec-title">🍪 신규 간식 요청</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">🍬 신규 간식 요청</div>', unsafe_allow_html=True)
 
     sorted_reqs = sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)
     for r in sorted_reqs:
@@ -412,11 +433,10 @@ if st.session_state.page == "main":
 
     with st.form(key="search_form", clear_on_submit=False):
         req_name = st.text_input("원하는 다과/음료명을 입력하세요", placeholder="예: 코카콜라 제로", key="req_name_input")
-        
-        # 폼 내의 검색 버튼도 중앙 & 폭 조절을 원할 경우 컬럼 분할을 쓸 수 있으나, 보통 검색은 넓은게 좋음. 
         search_clicked = st.form_submit_button("🔍 제품명 검색", use_container_width=True)
 
     if search_clicked:
+        st.session_state.naver_results = [] # 검색 시 기존 결과 초기화
         if not req_name:
             st.warning("제품명을 입력한 뒤 검색해 주세요.")
         else:
@@ -442,11 +462,11 @@ if st.session_state.page == "main":
                 if st.button("선택", key=f"nv_{ci}"):
                     st.session_state.selected_naver = item
                     st.session_state.search_input_val = item["name"]
-                    st.session_state.naver_results = []
+                    st.session_state.naver_results = [] # 선택 시 검색 결과 초기화
                     st.toast("상품 정보가 입력창에 세팅되었습니다.")
                     st.rerun()
 
-    st.markdown("**카테고리 태그 지정 (중복 선택 가능)**")
+    st.markdown("**카테고리 태그 지정 (중복 선택 가능 / 선택 안함 가능)**")
     cat_cols = st.columns(5)
     for ci, cat in enumerate(CATEGORIES):
         with cat_cols[ci % 5]:
@@ -457,9 +477,8 @@ if st.session_state.page == "main":
                 else: st.session_state.selected_cats.append(cat)
                 st.rerun()
 
-    st.write("") # 간격 띄우기
+    st.write("") 
     
-    # 2. 요구사항: 제출 버튼명 "제출!"로 변경, 크기 축소 및 중앙 정렬
     col_btn1, col_btn2, col_btn3 = st.columns([1.5, 2, 1.5])
     with col_btn2:
         if st.button("제출!", use_container_width=True, type="primary"):
@@ -469,8 +488,6 @@ if st.session_state.page == "main":
 
             if not name:
                 st.warning("다과명을 명시해 주세요.")
-            elif not cats_to_assign:
-                st.warning("최소 하나 이상의 카테고리 태그를 결합해 주세요.")
             else:
                 existing = next((r for r in st.session_state.requests if r["name"] == name), None)
                 if existing:
@@ -490,16 +507,16 @@ if st.session_state.page == "main":
                 st.session_state.selected_naver = None
                 st.session_state.selected_cats = []
                 st.session_state.search_input_val = ""
+                st.session_state.naver_results = [] # 제출 후 검색 결과 초기화
                 st.rerun()
 
-    # ── 1. 대시보드 그래프 컬러 핑크 테마로 교체 ──
+    # ── 대시보드 그래프 컬러 옐로우 테마로 교체 ──
     st.markdown('<div class="sec-title">📊 직원 취향 분석 대시보드</div>', unsafe_allow_html=True)
     col_c1, col_c2 = st.columns(2)
 
     with col_c1:
         cvotes = st.session_state.cat_votes
-        # 핑크 & 파스텔 팔레트로 변경
-        pie_colors = ["#F080A2", "#EDBE9A", "#E86A92", "#DDA7B0", "#9DC8D6", "#A7C5EB", "#D5BCA2", "#8BB8D4", "#BFA99B", "#F2B872"]
+        pie_colors = ["#FFD54F", "#FFCC80", "#FFAB91", "#FFE082", "#FFF59D", "#C5E1A5", "#BCAAA4", "#81D4FA", "#D7CCC8", "#FFF176"]
         fig_donut = go.Figure(data=[go.Pie(
             labels=list(cvotes.keys()), values=list(cvotes.values()),
             hole=0.6, marker=dict(colors=pie_colors),
@@ -518,18 +535,17 @@ if st.session_state.page == "main":
             
         sorted_chart = sorted(chart_data.items(), key=lambda x: x[1], reverse=True)[:5]
         
-        # 바 차트 역시 캔디 핑크톤 적용
         fig_bar = go.Figure(data=[go.Bar(
             x=[item[0][:4] for item in sorted_chart],
             y=[item[1] for item in sorted_chart],
-            marker_color="rgba(240, 128, 162, 0.85)",
+            marker_color="rgba(251, 192, 45, 0.85)",
             marker_cornerradius=10,
         )])
         fig_bar.update_layout(
             showlegend=False, margin=dict(t=5, b=5, l=5, r=5), height=180,
             bargap=0.55,
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(tickfont_size=9), yaxis=dict(tickfont_size=9, gridcolor="rgba(240,128,162,0.08)"),
+            xaxis=dict(tickfont_size=9), yaxis=dict(tickfont_size=9, gridcolor="rgba(251,192,45,0.08)"),
         )
         st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
 
@@ -541,8 +557,8 @@ elif st.session_state.page == "admin":
 
     st.markdown("""
     <div class="logo-banner" style="padding:20px">
-        <div class="logo-sub" style="color:#E86A92">인프라 관리 시스템</div>
-        <div class="logo-main" style="font-size:24px; font-family:'Pretendard'; font-weight:700; color:'#4A3E42';">Snack Lab Admin</div>
+        <div class="logo-sub" style="color:#F57F17">인프라 관리 시스템</div>
+        <div class="logo-main" style="font-size:24px; font-family:'Nanum Gothic'; font-weight:800; color:'#4E342E';">Snack Lab Admin</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -580,37 +596,44 @@ elif st.session_state.page == "admin":
                     else:
                         st.session_state.pinned_snacks.discard(s["id"])
 
-        st.markdown("---")
-        st.markdown("#### 🙋 신규 요청 항목 심사 및 입고 처리")
-        reqs_to_add = []
-        for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
-            if st.checkbox(f"{r['name']} [{"/".join(r['categories'])}] - {r['votes']}명 동의", key=f"add_{r['id']}"):
-                reqs_to_add.append(r)
-
-        if st.button("🔄 선택 다과 입고 & 명단 대치 업데이트", use_container_width=True, type="primary"):
+        if st.button("🔄 비치 명단 업데이트", use_container_width=True):
             for s in st.session_state.snacks:
                 st.session_state.history_likes[s["name"]] = max(
                     s["likes"], st.session_state.history_likes.get(s["name"], 0)
                 )
-            
-            kept_snacks = [s for s in st.session_state.snacks if s["id"] in st.session_state.pinned_snacks]
-            
+            # 고정된 스낵만 유지
+            st.session_state.snacks = [s for s in st.session_state.snacks if s["id"] in st.session_state.pinned_snacks]
+            st.toast("비치 명단이 업데이트되었습니다.")
+            st.rerun()
+
+        st.markdown("---")
+        st.markdown("#### 🙋 신규 요청 항목 심사 및 입고 처리")
+        reqs_to_add = []
+        for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
+            cat_str = "/".join(r['categories']) if r['categories'] else "카테고리 없음"
+            if st.checkbox(f"{r['name']} [{cat_str}] - {r['votes']}명 동의", key=f"add_{r['id']}"):
+                reqs_to_add.append(r)
+
+        if st.button("✅ 선택 다과 입고", use_container_width=True, type="primary"):
             count = 0
             for r in reqs_to_add:
-                if not any(s["name"] == r["name"] for s in kept_snacks):
+                if not any(s["name"] == r["name"] for s in st.session_state.snacks):
                     img = fetch_snack_image(r["name"])
-                    kept_snacks.append({
+                    st.session_state.snacks.append({
                         "id": int(time.time() * 1000) + count,
                         "name": r["name"],
                         "categories": r["categories"],
                         "image": img,
                         "price": 2000, 
-                        "likes": r["votes"]
+                        "likes": 0  # 메인화면 재구매 투표는 0으로 초기화
                     })
                     count += 1
             
-            st.session_state.snacks = kept_snacks
-            st.toast("탕비실 인프라 진열 리스트가 교체되었습니다.")
+            # 입고 처리된 다과는 요청 명단에서 삭제
+            req_ids_to_add = [r["id"] for r in reqs_to_add]
+            st.session_state.requests = [r for r in st.session_state.requests if r["id"] not in req_ids_to_add]
+            
+            st.toast("선택한 다과가 입고 처리되어 명단에서 삭제되었습니다.")
             st.rerun()
 
         st.markdown("---")
