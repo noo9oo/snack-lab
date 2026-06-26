@@ -203,14 +203,14 @@ if _font_css:
 def init_state():
     if "snacks" not in st.session_state:
         st.session_state.snacks = [
-            {"id": 1, "name": "허니버터칩", "category": "짠맛", "image": "https://via.placeholder.com/120x120/FFD700/333?text=HBC", "price": 2500, "likes": 14},
-            {"id": 2, "name": "초코파이", "category": "단맛", "image": "https://via.placeholder.com/120x120/8B4513/fff?text=CP", "price": 4800, "likes": 22},
-            {"id": 3, "name": "새우깡", "category": "짠맛", "image": "https://via.placeholder.com/120x120/FF6347/fff?text=SU", "price": 1800, "likes": 9},
-            {"id": 4, "name": "빼빼로", "category": "단맛", "image": "https://via.placeholder.com/120x120/DC143C/fff?text=PP", "price": 1500, "likes": 18},
-            {"id": 5, "name": "하리보 골드베렌", "category": "젤리", "image": "https://via.placeholder.com/120x120/FF69B4/fff?text=HB", "price": 3200, "likes": 11},
-            {"id": 6, "name": "프링글스 오리지널", "category": "칩", "image": "https://via.placeholder.com/120x120/228B22/fff?text=PR", "price": 3500, "likes": 16},
-            {"id": 7, "name": "오레오", "category": "쿠키", "image": "https://via.placeholder.com/120x120/1a1a2e/fff?text=OR", "price": 2800, "likes": 13},
-            {"id": 8, "name": "칸쵸", "category": "쿠키", "image": "https://via.placeholder.com/120x120/D2691E/fff?text=KC", "price": 1600, "likes": 7},
+            {"id": 1, "name": "허니버터칩", "category": "짠맛", "image": "https://placehold.co/120x120/FFD700/333?text=HBC", "price": 2500, "likes": 14},
+            {"id": 2, "name": "초코파이", "category": "단맛", "image": "https://placehold.co/120x120/8B4513/fff?text=CP", "price": 4800, "likes": 22},
+            {"id": 3, "name": "새우깡", "category": "짠맛", "image": "https://placehold.co/120x120/FF6347/fff?text=SU", "price": 1800, "likes": 9},
+            {"id": 4, "name": "빼빼로", "category": "단맛", "image": "https://placehold.co/120x120/DC143C/fff?text=PP", "price": 1500, "likes": 18},
+            {"id": 5, "name": "하리보 골드베렌", "category": "젤리", "image": "https://placehold.co/120x120/FF69B4/fff?text=HB", "price": 3200, "likes": 11},
+            {"id": 6, "name": "프링글스 오리지널", "category": "칩", "image": "https://placehold.co/120x120/228B22/fff?text=PR", "price": 3500, "likes": 16},
+            {"id": 7, "name": "오레오", "category": "쿠키", "image": "https://placehold.co/120x120/1a1a2e/fff?text=OR", "price": 2800, "likes": 13},
+            {"id": 8, "name": "칸쵸", "category": "쿠키", "image": "https://placehold.co/120x120/D2691E/fff?text=KC", "price": 1600, "likes": 7},
         ]
     if "requests" not in st.session_state:
         st.session_state.requests = [
@@ -396,7 +396,7 @@ if st.session_state.page == "main":
         with snack_cols[i % 2]:
             tag_color = CAT_COLORS.get(s["category"], "#6B7280")
             st.markdown(f"""<div class="snack-card">
-                <img src="{s['image']}" onerror="this.src='https://via.placeholder.com/120/ccc/666?text=Snack'">
+                <img src="{s['image']}" onerror="this.src='https://placehold.co/120x120/ccc/666?text=Snack'">
                 <div class="name">{s['name']}</div>
                 <div class="price">{s['price']:,}원</div>
                 <span class="tag" style="background:{tag_color}">{s['category']}</span>
@@ -436,15 +436,18 @@ if st.session_state.page == "main":
     with col_s2:
         search_clicked = st.button("🔍 네이버검색", use_container_width=True)
 
-    if search_clicked and req_name:
-        with st.spinner("네이버 쇼핑에서 검색 중..."):
-            results, err = search_naver_shopping(req_name)
-        if err:
-            st.warning(err)
-        elif results:
-            st.session_state.naver_results = results
+    if search_clicked:
+        if not req_name:
+            st.warning("검색할 과자 이름을 먼저 입력해주세요.")
         else:
-            st.info("검색 결과가 없습니다.")
+            with st.spinner("네이버 쇼핑에서 검색 중..."):
+                results, err = search_naver_shopping(req_name)
+            if err:
+                st.warning(err)
+            elif results:
+                st.session_state.naver_results = results
+            else:
+                st.info("검색 결과가 없습니다.")
 
     if st.session_state.get("naver_results"):
         st.markdown("**검색 결과** (클릭하여 선택)")
@@ -555,7 +558,7 @@ elif st.session_state.page == "admin":
                     st.session_state.snacks.append({
                         "id": int(time.time() * 1000) + count,
                         "name": r["name"], "category": r["category"],
-                        "image": f"https://via.placeholder.com/120x120/{tag_color}/fff?text={r['name'][:2]}",
+                        "image": f"https://placehold.co/120x120/{tag_color}/fff?text={r['name'][:2]}",
                         "price": 0, "likes": r["votes"],
                     })
                     count += 1
