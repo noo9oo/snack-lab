@@ -198,20 +198,46 @@ if _font_css:
 
 
 # ─────────────────────────────────────────────
+# 네이버에서 제품 이미지 가져오기 (캐시)
+# ─────────────────────────────────────────────
+@st.cache_data(ttl=3600)
+def fetch_snack_image(name):
+    try:
+        client_id = st.secrets.get("NAVER_CLIENT_ID", "")
+        client_secret = st.secrets.get("NAVER_CLIENT_SECRET", "")
+        if not client_id or client_id.startswith("여기에"):
+            return ""
+        url = "https://openapi.naver.com/v1/search/shop.json"
+        headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
+        res = requests.get(url, headers=headers, params={"query": name, "display": 1}, timeout=5)
+        if res.status_code == 200:
+            items = res.json().get("items", [])
+            if items:
+                return items[0].get("image", "")
+    except Exception:
+        pass
+    return ""
+
+
+# ─────────────────────────────────────────────
 # Session State 초기화
 # ─────────────────────────────────────────────
 def init_state():
     if "snacks" not in st.session_state:
-        st.session_state.snacks = [
-            {"id": 1, "name": "허니버터칩", "category": "짠맛", "image": "https://placehold.co/120x120/FFD700/333?text=HBC", "price": 2500, "likes": 14},
-            {"id": 2, "name": "초코파이", "category": "단맛", "image": "https://placehold.co/120x120/8B4513/fff?text=CP", "price": 4800, "likes": 22},
-            {"id": 3, "name": "새우깡", "category": "짠맛", "image": "https://placehold.co/120x120/FF6347/fff?text=SU", "price": 1800, "likes": 9},
-            {"id": 4, "name": "빼빼로", "category": "단맛", "image": "https://placehold.co/120x120/DC143C/fff?text=PP", "price": 1500, "likes": 18},
-            {"id": 5, "name": "하리보 골드베렌", "category": "젤리", "image": "https://placehold.co/120x120/FF69B4/fff?text=HB", "price": 3200, "likes": 11},
-            {"id": 6, "name": "프링글스 오리지널", "category": "칩", "image": "https://placehold.co/120x120/228B22/fff?text=PR", "price": 3500, "likes": 16},
-            {"id": 7, "name": "오레오", "category": "쿠키", "image": "https://placehold.co/120x120/1a1a2e/fff?text=OR", "price": 2800, "likes": 13},
-            {"id": 8, "name": "칸쵸", "category": "쿠키", "image": "https://placehold.co/120x120/D2691E/fff?text=KC", "price": 1600, "likes": 7},
+        default_snacks = [
+            {"id": 1, "name": "허니버터칩", "category": "짠맛", "price": 2500, "likes": 14},
+            {"id": 2, "name": "초코파이", "category": "단맛", "price": 4800, "likes": 22},
+            {"id": 3, "name": "새우깡", "category": "짠맛", "price": 1800, "likes": 9},
+            {"id": 4, "name": "빼빼로", "category": "단맛", "price": 1500, "likes": 18},
+            {"id": 5, "name": "하리보 골드베렌", "category": "젤리", "price": 3200, "likes": 11},
+            {"id": 6, "name": "프링글스 오리지널", "category": "칩", "price": 3500, "likes": 16},
+            {"id": 7, "name": "오레오", "category": "쿠키", "price": 2800, "likes": 13},
+            {"id": 8, "name": "칸쵸", "category": "쿠키", "price": 1600, "likes": 7},
         ]
+        for s in default_snacks:
+            img = fetch_snack_image(s["name"])
+            s["image"] = img if img else f"https://placehold.co/120x120/{CAT_COLORS.get(s['category'],'999').lstrip('#')}/fff?text={s['name'][:2]}"
+        st.session_state.snacks = default_snacks
     if "requests" not in st.session_state:
         st.session_state.requests = [
             {"id": 1, "name": "포카칩 어니언", "category": "칩", "votes": 5},
@@ -432,12 +458,9 @@ if st.session_state.page == "main":
     st.markdown("---")
     st.markdown("#### 🆕 새 간식 요청")
 
-    req_name = st.text_input("원하는 과자 이름 입력 (선택)", placeholder="예: 포카칩 어니언", key="req_name_input")
-
-    # 네이버 쇼핑 검색
-    col_s1, col_s2 = st.columns([3, 1])
-    with col_s2:
-        search_clicked = st.button("🔍 네이버검색", use_container_width=True)
+    with st.form(key="search_form", clear_on_submit=False):
+        req_name = st.text_input("원하는 과자 이름을 입력하고 검색 버튼을 눌러주세요", placeholder="예: 포카칩 어니언", key="req_name_input")
+        search_clicked = st.form_submit_button("🔍 네이버 쇼핑 검색", use_container_width=True)
 
     if search_clicked:
         if not req_name:
@@ -561,11 +584,14 @@ elif st.session_state.page == "admin":
             count = 0
             for r in reqs_to_add:
                 if not any(s["name"] == r["name"] for s in st.session_state.snacks):
+                    img = fetch_snack_image(r["name"])
                     tag_color = CAT_COLORS.get(r["category"], "6B7280").lstrip("#")
+                    if not img:
+                        img = f"https://placehold.co/120x120/{tag_color}/fff?text={r['name'][:2]}"
                     st.session_state.snacks.append({
                         "id": int(time.time() * 1000) + count,
                         "name": r["name"], "category": r["category"],
-                        "image": f"https://placehold.co/120x120/{tag_color}/fff?text={r['name'][:2]}",
+                        "image": img,
                         "price": 0, "likes": r["votes"],
                     })
                     count += 1
