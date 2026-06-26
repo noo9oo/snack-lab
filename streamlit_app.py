@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────
-# Custom CSS (투명한 글래스모피즘 & 부드러운 애니메이션 인터랙션)
+# Custom CSS (핑크 캔디 테마, 글래스모피즘, 별사탕 플로팅)
 # ─────────────────────────────────────────────
 _font_path = pathlib.Path(__file__).parent / "fonts" / "Super Funtime.ttf"
 _font_b64 = base64.b64encode(_font_path.read_bytes()).decode() if _font_path.exists() else ""
@@ -31,150 +31,133 @@ _font_css = f"""@font-face {{
 st.markdown("""
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css');
-html, body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f4f7fa; }
+html, body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #fdfafb; }
 .block-container { max-width: 520px; padding: 0 1rem 4rem; }
 header[data-testid="stHeader"] { background: transparent; }
 
-/* 초경량 글래스모피즘 공통 스타일 */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.45);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(148, 163, 184, 0.08);
-}
-
-/* 1. 상단 공지 알림판 (배너명 없음) */
-.notice-box {
-    padding: 14px 18px;
-    margin: -0.5rem -1rem 1.2rem;
-    background: rgba(224, 242, 254, 0.55);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    border-radius: 14px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #0369a1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* 2. 상단 좌측 미니멀 네비게이션 탭 */
-.nav-wrapper {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 12px;
-}
-div[data-testid="stHorizontalBlock"].nav-block {
-    gap: 4px !important;
-    width: auto !important;
-}
+/* 상단 좌측 미니멀 네비게이션 탭 */
+.nav-wrapper { display: flex; justify-content: flex-start; margin-bottom: 12px; }
+div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: auto !important; }
 .nav-block .stButton > button {
-    font-size: 11.5px !important;
-    padding: 2px 10px !important;
-    min-height: 26px !important;
-    height: 26px !important;
-    line-height: 26px !important;
-    border-radius: 8px !important;
-    background: rgba(255, 255, 255, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    color: #475569 !important;
+    font-size: 11.5px !important; padding: 2px 10px !important;
+    min-height: 26px !important; height: 26px !important; line-height: 26px !important;
+    border-radius: 8px !important; background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important; color: #475569 !important;
 }
 
-/* 3D 플로팅 메인 로고 배너 */
+/* 1 & 6. 3D 플로팅 메인 로고 배너 & 별사탕 에셋 */
 .logo-banner {
     position: relative; text-align: center; padding: 25px 20px;
-    background: linear-gradient(135deg, rgba(224,242,254,0.4) 0%, rgba(240,253,244,0.4) 100%);
-    border-radius: 20px; margin: 0 -1rem 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.06);
-}
-.logo-sub { font-size: 12px; font-weight: 700; color: #0284c7; letter-spacing: 1px; margin-bottom: 4px; }
-.logo-main { display: flex; align-items: center; justify-content: center; gap: 4px; }
-.glass-letter {
-    display: inline-block; font-size: 52px;
-    font-family: 'SuperFuntime', 'Pretendard', sans-serif;
-    color: rgba(14, 165, 233, 0.85); text-shadow: 0 2px 4px rgba(255,255,255,0.5);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; line-height: 1;
-}
-.glass-letter:hover { transform: translateY(-3px) scale(1.05); color: rgba(14, 165, 233, 1); }
-.glass-space { width: 14px; }
-.logo-bottom-text { font-size: 12px; font-weight: 500; color: #64748b; margin-top: 8px; margin-bottom: 0; }
-
-/* 세련된 타이틀 */
-.sec-title {
-    font-size: 16px; font-weight: 700; margin: 1.8rem 0 0.8rem;
-    display: flex; align-items: center; gap: 6px; color: #334155;
-}
-
-/* 피드백 스낵 카드 스타일 */
-.snack-card {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border-radius: 16px; padding: 14px; text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 4px 14px rgba(148, 163, 184, 0.04);
-    margin-bottom: 8px;
+    border-radius: 20px; margin: 0 -1rem 1.2rem;
+    border: 1px solid rgba(240, 128, 162, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(240, 128, 162, 0.05);
+    overflow: hidden;
 }
+/* 별사탕 글래스 & 플로팅 효과 */
+.star-candy {
+    position: absolute; font-size: 26px;
+    color: rgba(240, 128, 162, 0.8);
+    text-shadow: 0 0 8px rgba(255,255,255,0.9), 0 2px 4px rgba(240,128,162,0.3);
+    filter: drop-shadow(0 3px 5px rgba(240,128,162,0.2));
+    user-select: none;
+}
+.star-left { top: 20%; left: 8%; animation: floatStar 3.5s ease-in-out infinite; }
+.star-right { bottom: 25%; right: 8%; animation: floatStar 4s ease-in-out infinite reverse; }
+@keyframes floatStar {
+    0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+    50% { transform: translateY(-10px) rotate(15deg) scale(1.1); }
+}
+
+.logo-sub { font-size: 12px; font-weight: 700; color: #E86A92; letter-spacing: 1px; margin-bottom: 4px; }
+.logo-main { display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 2; position: relative; }
+/* 핑크 캔디 글씨 복원 */
+.glass-letter {
+    display: inline-block; position: relative;
+    font-size: 52px; font-weight: normal; font-family: 'SuperFuntime', 'Pretendard', sans-serif;
+    color: rgba(240, 128, 162, 0.9); padding: 0px 2px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(240,128,162,0.06) 40%, rgba(255,255,255,0.2) 100%);
+    -webkit-background-clip: padding-box; background-clip: padding-box;
+    text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 -1px 1px rgba(240,128,162,0.15), 0 4px 12px rgba(240,128,162,0.25);
+    filter: drop-shadow(0 4px 8px rgba(240,128,162,0.2)); -webkit-text-stroke: 0.5px rgba(240,128,162,0.3);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; line-height: 1;
+}
+.glass-letter:hover { transform: translateY(-3px) scale(1.05); color: rgba(240, 128, 162, 1); filter: drop-shadow(0 6px 14px rgba(240,128,162,0.4)); }
+.glass-space { width: 14px; }
+/* 5. 텍스트 복원 */
+.logo-bottom-text { font-size: 12px; font-weight: 500; color: #A08C93; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
+
+/* 4. 타이틀 밑으로 이동한 공지 알림판 */
+.notice-box {
+    padding: 14px 18px; margin: 0 -0.5rem 1.8rem;
+    background: rgba(253, 242, 248, 0.65);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(240, 128, 162, 0.3);
+    border-radius: 14px; font-size: 13.5px; font-weight: 600; color: #BE185D;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 12px rgba(240, 128, 162, 0.05);
+}
+
+/* 섹션 타이틀 */
+.sec-title { font-size: 16px; font-weight: 700; margin: 1.8rem 0 0.8rem; display: flex; align-items: center; gap: 6px; color: #4A3E42; }
+
+/* 카드 공통 글래스 */
+.snack-card, .req-card, .cpg-item {
+    background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 14px rgba(240, 128, 162, 0.04);
+}
+.snack-card { border-radius: 16px; padding: 14px; text-align: center; margin-bottom: 8px; }
 .snack-card img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #fff; }
-.snack-card .name { font-size: 13px; font-weight: 600; margin: 6px 0 2px; color: #1e293b; }
-.snack-card .price { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+.snack-card .name { font-size: 13px; font-weight: 600; margin: 6px 0 2px; color: #4A3E42; }
+.snack-card .price { font-size: 11px; color: #A08C93; margin-bottom: 6px; }
+
+/* 3. 카테고리 태그 폰트 크기 축소 및 줄바꿈 방지 */
 .tag-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; margin-bottom: 6px; }
-
-/* 세분화된 세련된 실버-쿨톤 태그 */
 .tag {
-    display: inline-block; padding: 2px 8px; border-radius: 8px;
-    font-size: 10px; font-weight: 600; color: #fff; background: #94a3b8;
+    display: inline-block; padding: 2px 7px; border-radius: 6px;
+    font-size: 9px; font-weight: 600; color: #fff; background: #E2ACB8;
+    white-space: nowrap; /* 줄바꿈 절대 방지 */
 }
-.tag-단맛 { background: #38bdf8; } .tag-짠맛 { background: #475569; }
-.tag-매운맛 { background: #f43f5e; } .tag-쿠키_비스킷 { background: #818cf8; }
-.tag-스낵_칩 { background: #0d9488; } .tag-젤리_사탕 { background: #22d3ee; }
-.tag-견과류 { background: #64748b; } .tag-탄산음료 { background: #0284c7; }
-.tag-커피_차 { background: #0f766e; } .tag-주스_드링크 { background: #ea580c; }
+/* 파스텔 핑크/피치 톤 컬러 팔레트 매핑 */
+.tag-단맛 { background: #F080A2; } .tag-짠맛 { background: #EDBE9A; color: #7A5C2E; }
+.tag-매운맛 { background: #E86A92; } .tag-쿠키_비스킷 { background: #DDA7B0; }
+.tag-스낵_칩 { background: #9DC8D6; color: #2C6E7A; } .tag-젤리_사탕 { background: #A7C5EB; color: #3A5B8C; }
+.tag-견과류 { background: #D5BCA2; color: #6E5336; } .tag-탄산음료 { background: #8BB8D4; }
+.tag-커피_차 { background: #BFA99B; } .tag-주스_드링크 { background: #F2B872; color: #8F5514; }
 
-/* 요청 카드 */
-.req-card {
-    background: rgba(255, 255, 255, 0.5); border-radius: 14px; padding: 12px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.4); display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.01);
-}
-.req-card .info h4 { font-size: 13px; font-weight: 600; margin: 0 0 4px 0; color: #1e293b; }
-.req-card .info .meta { font-size: 11px; color: #64748b; }
+.req-card { border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.req-card .info h4 { font-size: 13px; font-weight: 600; margin: 0 0 4px 0; color: #4A3E42; }
+.req-card .info .meta { font-size: 11px; color: #A08C93; }
 
-.cpg-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px;
-    background: rgba(248, 250, 252, 0.6); border-radius: 10px; margin-bottom: 6px;
-}
+.cpg-item { border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; padding: 10px; }
 .cpg-item img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }
-.cpg-item .cpg-name { font-size: 12px; font-weight: 600; color: #1e293b; }
-.cpg-item .cpg-price { font-size: 11px; color: #64748b; }
+.cpg-item .cpg-name { font-size: 12px; font-weight: 600; color: #4A3E42; }
+.cpg-item .cpg-price { font-size: 11px; color: #A08C93; }
 
 .ai-result {
-    background: rgba(240, 253, 244, 0.5); border-radius: 16px; padding: 18px; border: 1px solid rgba(187, 247, 208, 0.6);
-    font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; color: #334155;
+    background: rgba(253, 242, 248, 0.5); border-radius: 16px; padding: 18px; border: 1px solid rgba(240, 128, 162, 0.3);
+    font-size: 12.5px; line-height: 1.7; white-space: pre-wrap; color: #4A3E42;
 }
-.empty-zone {
-    border: 1px dashed #cbd5e1; border-radius: 16px; padding: 35px 20px;
-    text-align: center; color: #94a3b8; font-size: 12.5px;
-}
+.empty-zone { border: 1px dashed #E2ACB8; border-radius: 16px; padding: 35px 20px; text-align: center; color: #C4A2AC; font-size: 12.5px; }
 
-/* 8. 부드럽게 눌리는 스마트 버튼 컴포넌트 */
+/* 버튼 공통 & 1. 프라이머리(제출) 버튼 핑크 톤 커스텀 */
 div[data-testid="stHorizontalBlock"] { gap: 6px; }
 .stButton > button {
-    border-radius: 10px !important;
-    font-weight: 600 !important;
+    border-radius: 10px !important; font-weight: 600 !important;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
-.stButton > button:hover {
-    transform: translateY(-1px) scale(1.01);
-    box-shadow: 0 4px 12px rgba(148, 163, 184, 0.12) !important;
+.stButton > button:hover { transform: translateY(-1px) scale(1.01); box-shadow: 0 4px 12px rgba(240, 128, 162, 0.15) !important; }
+.stButton > button:active { transform: translateY(1px) scale(0.98); }
+
+/* Primary 속성을 가진 버튼 색상 오버라이드 (핑크 그라데이션) */
+button[kind="primary"] {
+    background: linear-gradient(135deg, #F080A2, #E86A92) !important;
+    border: none !important; color: white !important;
+    box-shadow: 0 4px 10px rgba(240, 128, 162, 0.2) !important;
 }
-.stButton > button:active {
-    transform: translateY(1px) scale(0.98);
-}
+button[kind="primary"]:hover { background: linear-gradient(135deg, #E86A92, #D8567F) !important; }
+button[kind="primary"] p { color: white !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -205,18 +188,15 @@ def fetch_snack_image(name):
 
 
 # ─────────────────────────────────────────────
-# Session State 초기화 (구조 개편)
+# Session State 초기화 
 # ─────────────────────────────────────────────
 def init_state():
     if "snacks" not in st.session_state:
         st.session_state.snacks = []
-        
     if "history_likes" not in st.session_state:
         st.session_state.history_likes = {}
-        
     if "pinned_snacks" not in st.session_state:
         st.session_state.pinned_snacks = set()
-        
     if "requests" not in st.session_state:
         st.session_state.requests = [
             {"id": 1, "name": "포카칩 어니언", "categories": ["짠맛", "스낵/칩"], "votes": 5},
@@ -239,15 +219,13 @@ def init_state():
     if "search_input_val" not in st.session_state:
         st.session_state.search_input_val = ""
         
-    # 5. 요구사항: 재구매/나도투표 취소(토글) 작동 추적 데이터베이스 설정
     if "user_likes" not in st.session_state:
-        st.session_state.user_likes = set() # 내가 좋아요를 누른 스낵 ID 기록 장부
+        st.session_state.user_likes = set()
     if "user_votes" not in st.session_state:
-        st.session_state.user_votes = set() # 내가 투표한 신규 요청 ID 기록 장부
+        st.session_state.user_votes = set()
     if "selected_cats" not in st.session_state:
-        st.session_state.selected_cats = [] # 복수 카테고리 입력을 위한 리스트
+        st.session_state.selected_cats = [] 
 
-# 6. 요구사항: 정밀하게 분할된 세분화 다과 및 음료 카테고리 구성
 CATEGORIES = [
     "단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩", 
     "젤리/사탕", "견과류", "탄산음료", "커피/차", "주스/드링크"
@@ -255,24 +233,20 @@ CATEGORIES = [
 
 init_state()
 
-
 # ─────────────────────────────────────────────
-# 네이버 쇼핑 검색 API
+# API 연동 파트 (네이버 쇼핑 / Gemini)
 # ─────────────────────────────────────────────
 def search_naver_shopping(keyword, display=5):
     try:
         client_id = st.secrets["NAVER_CLIENT_ID"]
         client_secret = st.secrets["NAVER_CLIENT_SECRET"]
     except Exception:
-        return None, "네이버 API 키가 설정되지 않았습니다. .streamlit/secrets.toml을 확인해주세요."
-
+        return None, "네이버 API 키가 설정되지 않았습니다."
     if client_id.startswith("여기에"):
         return None, "네이버 API 키를 실제 키로 교체해주세요."
-
     url = "https://openapi.naver.com/v1/search/shop.json"
     headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
     params = {"query": keyword, "display": display, "sort": "sim"}
-
     try:
         res = requests.get(url, headers=headers, params=params, timeout=10)
         if res.status_code == 200:
@@ -281,11 +255,8 @@ def search_naver_shopping(keyword, display=5):
             for item in data.get("items", [])[:display]:
                 name = item.get("title", "").replace("<b>", "").replace("</b>", "")
                 results.append({
-                    "name": name,
-                    "price": int(item.get("lprice", 0)),
-                    "image": item.get("image", ""),
-                    "link": item.get("link", ""),
-                    "mall": item.get("mallName", ""),
+                    "name": name, "price": int(item.get("lprice", 0)),
+                    "image": item.get("image", ""), "mall": item.get("mallName", ""),
                 })
             return results, None
         else:
@@ -293,16 +264,11 @@ def search_naver_shopping(keyword, display=5):
     except Exception as e:
         return None, f"네트워크 오류: {str(e)}"
 
-
-# ─────────────────────────────────────────────
-# Google Gemini API
-# ─────────────────────────────────────────────
 def call_gemini(prompt_text):
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
     except Exception:
         return "Gemini API 키가 설정되지 않았습니다."
-
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
     body = {
         "contents": [{"parts": [{"text": prompt_text}]}],
@@ -316,19 +282,11 @@ def call_gemini(prompt_text):
     except Exception as e:
         return f"요청 실패: {str(e)}"
 
-
 # ═════════════════════════════════════════════
 # 레이아웃 렌더링 파트
 # ═════════════════════════════════════════════
 
-# 1. 요구사항: 탕비실 알림판을 최상단 공지처럼 표출 (배너명 없음)
-st.markdown("""
-<div class="notice-box">
-    <span>☕</span> 다음 다과 입고 예정일은 7월 1일입니다. 필요한 간식은 아래에 요청해 주세요.
-</div>
-""", unsafe_allow_html=True)
-
-# 2. 요구사항: 좌측 상단으로 대폭 사이즈를 축소하여 배치한 미니멀 네비게이션 탭
+# 좌측 상단 탭
 col_nav, col_empty = st.columns([2, 3])
 with col_nav:
     nav_cols = st.columns(2)
@@ -342,14 +300,13 @@ with col_nav:
             st.rerun()
 
 
-# ═════════════════════════════════════════════
-# 메인 페이지
-# ═════════════════════════════════════════════
 if st.session_state.page == "main":
 
-    # ── 브랜드 로고 배너 ──
+    # ── 5 & 6. 로고 배너 (핑크색 3D 에셋 & 복원된 텍스트) ──
     st.markdown("""
     <div class="logo-banner">
+        <div class="star-candy star-left">⭐</div>
+        <div class="star-candy star-right">✨</div>
         <div class="logo-sub">정책기획팀</div>
         <div class="logo-main">
             <span class="glass-letter" data-char="S">S</span>
@@ -362,7 +319,14 @@ if st.session_state.page == "main":
             <span class="glass-letter" data-char="a">a</span>
             <span class="glass-letter" data-char="b">b</span>
         </div>
-        <p class="logo-bottom-text">최적의 다과 인프라를 연구하는 공간</p>
+        <p class="logo-bottom-text">🍪 최적의 간식조합 찾기</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── 4. 타이틀 바로 밑으로 이동한 공지 알림판 ──
+    st.markdown("""
+    <div class="notice-box">
+        <span>☕</span> 다음 다과 입고 예정일은 7월 1일입니다. 필요한 간식은 아래에 요청해 주세요.
     </div>
     """, unsafe_allow_html=True)
 
@@ -377,7 +341,6 @@ if st.session_state.page == "main":
             with snack_cols[i % 2]:
                 pin_icon = "📌 " if s["id"] in st.session_state.pinned_snacks else ""
                 
-                # 7. 요구사항: 다중 중복 태그 렌더링 처리
                 tag_html = '<div class="tag-container">'
                 for c in s["categories"]:
                     safe_class = c.replace("/", "_")
@@ -385,13 +348,12 @@ if st.session_state.page == "main":
                 tag_html += '</div>'
                 
                 st.markdown(f"""<div class="snack-card">
-                    <img src="{s['image']}" onerror="this.src='https://placehold.co/120x120/e2e8f0/64748b?text=Snack'">
+                    <img src="{s['image']}" onerror="this.src='https://placehold.co/120x120/FADDE1/C4A2AC?text=Snack'">
                     <div class="name">{pin_icon}{s['name']}</div>
                     <div class="price">{s['price']:,}원</div>
                     {tag_html}
                 </div>""", unsafe_allow_html=True)
                 
-                # 5. 요구사항: 재구매 추천 활성화/취소(토글) 제어 로직
                 has_liked = s["id"] in st.session_state.user_likes
                 btn_label = f"🍪 추천함 ({s['likes']})" if has_liked else f"👍 재구매 ({s['likes']})"
                 btn_type = "primary" if has_liked else "secondary"
@@ -429,7 +391,6 @@ if st.session_state.page == "main":
                 <div class="meta">{tag_html} · {r['votes']}명 요청</div>
             </div></div>""", unsafe_allow_html=True)
         with col_r2:
-            # 5. 요구사항: 나도투표(+1) 활성화/취소 토글 연동
             has_voted = r["id"] in st.session_state.user_votes
             v_label = "취소" if has_voted else "나도 +1"
             v_type = "primary" if has_voted else "secondary"
@@ -451,6 +412,8 @@ if st.session_state.page == "main":
 
     with st.form(key="search_form", clear_on_submit=False):
         req_name = st.text_input("원하는 다과/음료명을 입력하세요", placeholder="예: 코카콜라 제로", key="req_name_input")
+        
+        # 폼 내의 검색 버튼도 중앙 & 폭 조절을 원할 경우 컬럼 분할을 쓸 수 있으나, 보통 검색은 넓은게 좋음. 
         search_clicked = st.form_submit_button("🔍 제품명 검색", use_container_width=True)
 
     if search_clicked:
@@ -483,7 +446,6 @@ if st.session_state.page == "main":
                     st.toast("상품 정보가 입력창에 세팅되었습니다.")
                     st.rerun()
 
-    # 6 & 7. 요구사항: 복수 다중 카테고리 태그 다중 선택 인터페이스 구성
     st.markdown("**카테고리 태그 지정 (중복 선택 가능)**")
     cat_cols = st.columns(5)
     for ci, cat in enumerate(CATEGORIES):
@@ -495,45 +457,52 @@ if st.session_state.page == "main":
                 else: st.session_state.selected_cats.append(cat)
                 st.rerun()
 
-    if st.button("🚀 최종 요청서 제출", use_container_width=True, type="primary"):
-        sel_item = st.session_state.get("selected_naver")
-        name = sel_item["name"] if sel_item else st.session_state.search_input_val
-        cats_to_assign = list(st.session_state.selected_cats)
+    st.write("") # 간격 띄우기
+    
+    # 2. 요구사항: 제출 버튼명 "제출!"로 변경, 크기 축소 및 중앙 정렬
+    col_btn1, col_btn2, col_btn3 = st.columns([1.5, 2, 1.5])
+    with col_btn2:
+        if st.button("제출!", use_container_width=True, type="primary"):
+            sel_item = st.session_state.get("selected_naver")
+            name = sel_item["name"] if sel_item else st.session_state.search_input_val
+            cats_to_assign = list(st.session_state.selected_cats)
 
-        if not name:
-            st.warning("다과명을 명시해 주세요.")
-        elif not cats_to_assign:
-            st.warning("최소 하나 이상의 카테고리 태그를 결합해 주세요.")
-        else:
-            existing = next((r for r in st.session_state.requests if r["name"] == name), None)
-            if existing:
-                existing["votes"] += 1
-                st.toast("이미 리스트에 존재하여 요청 카운트가 추가되었습니다.")
+            if not name:
+                st.warning("다과명을 명시해 주세요.")
+            elif not cats_to_assign:
+                st.warning("최소 하나 이상의 카테고리 태그를 결합해 주세요.")
             else:
-                st.session_state.requests.append({
-                    "id": int(time.time() * 1000),
-                    "name": name,
-                    "categories": cats_to_assign,
-                    "votes": 1
-                })
-                for c in cats_to_assign:
-                    st.session_state.cat_votes[c] = st.session_state.cat_votes.get(c, 0) + 1
-                st.toast("신규 간식 요청서가 성공적으로 업로드되었습니다.")
-                
-            st.session_state.selected_naver = None
-            st.session_state.selected_cats = []
-            st.session_state.search_input_val = ""
-            st.rerun()
+                existing = next((r for r in st.session_state.requests if r["name"] == name), None)
+                if existing:
+                    existing["votes"] += 1
+                    st.toast("이미 리스트에 존재하여 요청 카운트가 추가되었습니다.")
+                else:
+                    st.session_state.requests.append({
+                        "id": int(time.time() * 1000),
+                        "name": name,
+                        "categories": cats_to_assign,
+                        "votes": 1
+                    })
+                    for c in cats_to_assign:
+                        st.session_state.cat_votes[c] = st.session_state.cat_votes.get(c, 0) + 1
+                    st.toast("신규 간식 요청서가 성공적으로 업로드되었습니다.")
+                    
+                st.session_state.selected_naver = None
+                st.session_state.selected_cats = []
+                st.session_state.search_input_val = ""
+                st.rerun()
 
-    # ── Section 3: 데이터 분석 대시보드 (메인 페이지 최하단 배치 유지) ──
+    # ── 1. 대시보드 그래프 컬러 핑크 테마로 교체 ──
     st.markdown('<div class="sec-title">📊 직원 취향 분석 대시보드</div>', unsafe_allow_html=True)
     col_c1, col_c2 = st.columns(2)
 
     with col_c1:
         cvotes = st.session_state.cat_votes
+        # 핑크 & 파스텔 팔레트로 변경
+        pie_colors = ["#F080A2", "#EDBE9A", "#E86A92", "#DDA7B0", "#9DC8D6", "#A7C5EB", "#D5BCA2", "#8BB8D4", "#BFA99B", "#F2B872"]
         fig_donut = go.Figure(data=[go.Pie(
             labels=list(cvotes.keys()), values=list(cvotes.values()),
-            hole=0.6, marker=dict(colors=["#38bdf8", "#475569", "#f43f5e", "#818cf8", "#0d9488", "#22d3ee", "#64748b", "#0284c7", "#0f766e", "#ea580c"]),
+            hole=0.6, marker=dict(colors=pie_colors),
             textinfo="percent", textfont_size=10,
         )])
         fig_donut.update_layout(
@@ -549,18 +518,18 @@ if st.session_state.page == "main":
             
         sorted_chart = sorted(chart_data.items(), key=lambda x: x[1], reverse=True)[:5]
         
-        # 8. 요구사항: 슬림한 두께감(bargap)과 강한 모서리 둥글기(marker_cornerradius) 반영
+        # 바 차트 역시 캔디 핑크톤 적용
         fig_bar = go.Figure(data=[go.Bar(
             x=[item[0][:4] for item in sorted_chart],
             y=[item[1] for item in sorted_chart],
-            marker_color="rgba(56, 189, 248, 0.7)",
+            marker_color="rgba(240, 128, 162, 0.85)",
             marker_cornerradius=10,
         )])
         fig_bar.update_layout(
             showlegend=False, margin=dict(t=5, b=5, l=5, r=5), height=180,
             bargap=0.55,
             paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(tickfont_size=9), yaxis=dict(tickfont_size=9, gridcolor="rgba(0,0,0,0.05)"),
+            xaxis=dict(tickfont_size=9), yaxis=dict(tickfont_size=9, gridcolor="rgba(240,128,162,0.08)"),
         )
         st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
 
@@ -572,24 +541,26 @@ elif st.session_state.page == "admin":
 
     st.markdown("""
     <div class="logo-banner" style="padding:20px">
-        <div class="logo-sub">인프라 관리 시스템</div>
-        <div class="logo-main" style="font-size:24px; font-family:'Pretendard'; font-weight:700; color:'#475569';">Snack Lab Admin</div>
+        <div class="logo-sub" style="color:#E86A92">인프라 관리 시스템</div>
+        <div class="logo-main" style="font-size:24px; font-family:'Pretendard'; font-weight:700; color:'#4A3E42';">Snack Lab Admin</div>
     </div>
     """, unsafe_allow_html=True)
 
     if not st.session_state.admin_auth:
         st.markdown("### 🔐 관리자 모드 개방")
         admin_pw = st.text_input("액세스 패스워드", type="password", key="admin_pw_input")
-        if st.button("인증 실행", use_container_width=True, type="primary"):
-            correct_pw = st.secrets.get("ADMIN_PASSWORD", "1234")
-            if admin_pw == correct_pw:
-                st.session_state.admin_auth = True
-                st.toast("보안 스크린 해제 완료.")
-                st.rerun()
-            else:
-                st.error("액세스 권한 암호가 올바르지 않습니다.")
+        
+        col_a1, col_a2, col_a3 = st.columns([1.5, 2, 1.5])
+        with col_a2:
+            if st.button("인증 실행", use_container_width=True, type="primary"):
+                correct_pw = st.secrets.get("ADMIN_PASSWORD", "1234")
+                if admin_pw == correct_pw:
+                    st.session_state.admin_auth = True
+                    st.toast("보안 스크린 해제 완료.")
+                    st.rerun()
+                else:
+                    st.error("액세스 권한 암호가 올바르지 않습니다.")
     else:
-        # 비치 품목 통제 관리
         st.markdown("#### 📋 실시간 탕비실 비치 품목 제어")
         if not st.session_state.snacks:
             st.caption("현재 비치된 다과 인프라가 전무합니다.")
@@ -603,14 +574,12 @@ elif st.session_state.page == "admin":
                         <div class="meta">{tags_str} · 👍 {s['likes']}표</div>
                     </div></div>""", unsafe_allow_html=True)
                 with col_m2:
-                    # 5. 요구사항: 재고 잔여 시 강제 업데이트 보존 고정 고정핀 스위치
                     is_pinned = s["id"] in st.session_state.pinned_snacks
                     if st.checkbox("📌 고정", value=is_pinned, key=f"pin_chk_{s['id']}"):
                         st.session_state.pinned_snacks.add(s["id"])
                     else:
                         st.session_state.pinned_snacks.discard(s["id"])
 
-        # 신규 접수 다과 메인 반영 스위치
         st.markdown("---")
         st.markdown("#### 🙋 신규 요청 항목 심사 및 입고 처리")
         reqs_to_add = []
@@ -618,18 +587,14 @@ elif st.session_state.page == "admin":
             if st.checkbox(f"{r['name']} [{"/".join(r['categories'])}] - {r['votes']}명 동의", key=f"add_{r['id']}"):
                 reqs_to_add.append(r)
 
-        # 4 & 5. 요구사항: 데이터 히스토리 보존형 일괄 리셋/업데이트 엔진
         if st.button("🔄 선택 다과 입고 & 명단 대치 업데이트", use_container_width=True, type="primary"):
-            # 기존 노출 스낵 선호도 누적 장부로 백업 이관
             for s in st.session_state.snacks:
                 st.session_state.history_likes[s["name"]] = max(
                     s["likes"], st.session_state.history_likes.get(s["name"], 0)
                 )
             
-            # 📌 재고 잔여 체크 항목만 살리고 필터 분리
             kept_snacks = [s for s in st.session_state.snacks if s["id"] in st.session_state.pinned_snacks]
             
-            # 신규 통과된 품목 융합
             count = 0
             for r in reqs_to_add:
                 if not any(s["name"] == r["name"] for s in kept_snacks):
@@ -639,7 +604,7 @@ elif st.session_state.page == "admin":
                         "name": r["name"],
                         "categories": r["categories"],
                         "image": img,
-                        "price": 2000, # 예시 기본 가격 세팅
+                        "price": 2000, 
                         "likes": r["votes"]
                     })
                     count += 1
@@ -648,7 +613,6 @@ elif st.session_state.page == "admin":
             st.toast("탕비실 인프라 진열 리스트가 교체되었습니다.")
             st.rerun()
 
-        # 🤖 AI 10만원 스마트 장바구니 빌더
         st.markdown("---")
         st.markdown("#### ☕ AI 10만원 최적 장바구니 자동 빌더")
         st.caption("네이버 쇼핑 대량 묶음 내의 쿠팡 도매 단가를 타겟팅하여 장바구니를 시뮬레이션합니다.")
@@ -686,6 +650,8 @@ elif st.session_state.page == "admin":
             st.markdown(f'<div class="ai-result">{st.session_state.ai_result}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
-        if st.button("🔒 세션 로그아웃", use_container_width=True):
-            st.session_state.admin_auth = False
-            st.rerun()
+        col_l1, col_l2, col_l3 = st.columns([1.5, 2, 1.5])
+        with col_l2:
+            if st.button("🔒 세션 로그아웃", use_container_width=True):
+                st.session_state.admin_auth = False
+                st.rerun()
