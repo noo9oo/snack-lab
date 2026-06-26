@@ -256,11 +256,11 @@ def init_state():
     if "naver_results" not in st.session_state:
         st.session_state.naver_results = []
 
-init_state()
-
 CAT_COLORS = {"단맛": "#D94F4F", "짠맛": "#EDBE9A", "칩": "#3B9B8E", "쿠키": "#F08E76",
               "젤리": "#9DC8D6", "견과류": "#C4A46C", "음료": "#6BB5C5", "매운맛": "#D94F4F"}
 CATEGORIES = list(CAT_COLORS.keys())
+
+init_state()
 
 TREND_SNACKS = [
     {"name": "두바이 초콜릿", "desc": "SNS 대란! 피스타치오 카다이프", "tag": "단맛"},
