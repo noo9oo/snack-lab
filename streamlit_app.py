@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="정책기획팀 Snack Lab",
-    page_icon="🍬",
+    page_icon="🍭",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
@@ -26,7 +26,7 @@ def load_local_font(file_name):
     return ""
 
 _font_b64_funtime = load_local_font("Super Funtime.ttf")
-_font_b64_nanum = load_local_font("NanumGothic.otf")  # otf 또는 ttf
+_font_b64_nanum = load_local_font("NanumGothic.otf")  # otf 또는 ttf 확장자에 맞게 확인
 
 _font_css = ""
 if _font_b64_funtime:
@@ -47,7 +47,7 @@ if _font_b64_nanum:
     """
 
 # ─────────────────────────────────────────────
-# Custom CSS 및 Lucide 아이콘 렌더링 스크립트
+# Custom CSS (투명 유리 질감, 얇은 테두리, 볼드체 지양)
 # ─────────────────────────────────────────────
 st.markdown(f"""
 <style>
@@ -55,18 +55,16 @@ st.markdown(f"""
 
 html, body {{ 
     font-family: 'NanumGothicLocal', 'Pretendard', sans-serif; 
-    background-color: #fdfcf9; 
+    background-color: #fdfcf9; /* 따뜻하고 밝은 아이보리/옐로우 베이스 */
     font-weight: normal;
 }}
 .block-container {{ max-width: 520px; padding: 0 1rem 4rem; }}
 header[data-testid="stHeader"] {{ background: transparent; }}
 
+/* 모든 볼드체 지양 */
 * {{ font-weight: normal !important; }}
 
-/* Lucide 아이콘 CSS 정렬 */
-.lucide {{ width: 1.2em; height: 1.2em; vertical-align: text-bottom; margin-right: 4px; }}
-.lucide-small {{ width: 1em; height: 1em; vertical-align: middle; margin-right: 2px; }}
-
+/* 상단 좌측 미니멀 네비게이션 탭 */
 .nav-wrapper {{ display: flex; justify-content: flex-start; margin-bottom: 12px; }}
 div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: auto !important; }}
 .nav-block .stButton > button {{
@@ -76,7 +74,7 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
     border: 0.5px solid rgba(200, 200, 200, 0.3) !important; color: #555 !important;
 }}
 
-/* 로고 배너 */
+/* 3D 플로팅 메인 로고 배너 (테두리 없음, 투명 질감) */
 .logo-banner {{
     position: relative; text-align: center; padding: 25px 20px;
     background: rgba(255, 255, 255, 0.4);
@@ -87,8 +85,12 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
     overflow: hidden;
 }}
 
+/* ✹ 플로팅 효과 */
 .star-candy {{
-    position: absolute; font-size: 24px; color: rgba(251, 192, 45, 0.6); user-select: none;
+    position: absolute;
+    font-size: 24px;
+    color: rgba(251, 192, 45, 0.6);
+    user-select: none;
 }}
 .star-left {{ top: 20%; left: 10%; animation: floatStar 3.5s ease-in-out infinite; }}
 .star-right {{ bottom: 25%; right: 10%; animation: floatStar 4s ease-in-out infinite reverse; }}
@@ -100,19 +102,29 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
 .logo-sub {{ font-size: 11.5px; color: #E86A92; letter-spacing: 1px; margin-bottom: 4px; }}
 .logo-main {{ display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 2; position: relative; }}
 
+/* 요청하신 snack lab 원본 폰트 CSS */
 .glass-letter {{
     display: inline-block; position: relative;
     font-size: 50px; font-weight: normal !important;
     font-family: 'SuperFuntime', 'Pretendard', sans-serif;
     color: rgba(240,128,162,0.9);
     padding: 2px 1px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(240,128,162,0.06) 40%, rgba(255,255,255,0.15) 100%);
+    background: linear-gradient(
+        180deg,
+        rgba(255,255,255,0.3) 0%,
+        rgba(240,128,162,0.06) 40%,
+        rgba(255,255,255,0.15) 100%
+    );
     -webkit-background-clip: padding-box; background-clip: padding-box;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.6), 0 -1px 1px rgba(240,128,162,0.12), 0 2px 8px rgba(240,128,162,0.18);
+    text-shadow:
+        0 1px 2px rgba(255,255,255,0.6),
+        0 -1px 1px rgba(240,128,162,0.12),
+        0 2px 8px rgba(240,128,162,0.18);
     filter: drop-shadow(0 2px 5px rgba(240,128,162,0.2));
     -webkit-text-stroke: 0.5px rgba(240,128,162,0.25);
     transition: transform 0.3s ease;
-    cursor: default; line-height: 1;
+    cursor: default;
+    line-height: 1;
 }}
 .glass-space {{ width: 14px; }}
 .logo-bottom-text {{ font-size: 12.5px; color: #888; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }}
@@ -128,10 +140,10 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }}
 
-/* 섹션 타이틀 */
+/* 섹션 타이틀 (폰트 크기 조정) */
 .sec-title {{ font-size: 15px; margin: 1.5rem 0 0.8rem; display: flex; align-items: center; gap: 6px; color: #444; }}
 
-/* 카드 공통 글래스 */
+/* 카드 공통 글래스 (투명/유리 질감 극대화, 얇은 테두리) */
 .snack-card, .req-card, .cpg-item {{
     background: rgba(255, 255, 255, 0.4); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -142,6 +154,7 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
 .snack-card img {{ width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: transparent; }}
 .snack-card .name {{ font-size: 13px; margin: 6px 0 6px; color: #444; }}
 
+/* 카테고리 태그 폰트 크기 축소 */
 .tag-container {{ display: flex; flex-wrap: nowrap; justify-content: center; gap: 3px; margin-bottom: 6px; overflow: hidden; }}
 .tag {{
     display: inline-block; padding: 2px 5px; border-radius: 6px;
@@ -157,7 +170,7 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
 .cpg-item {{ border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; padding: 10px; }}
 .cpg-item img {{ width: 52px; height: 52px; border-radius: 8px; object-fit: cover; }}
 .cpg-item .cpg-name {{ font-size: 12px; color: #444; }}
-.cpg-item .cpg-price {{ font-size: 11px; color: #888; }}
+.cpg-item .cpg-price {{ font-size: 11px; color: #888; }} /* 관리자 페이지용 */
 
 .ai-result {{
     background: rgba(255, 255, 255, 0.4); border-radius: 14px; padding: 16px; 
@@ -166,33 +179,32 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
 }}
 .empty-zone {{ border: 0.5px dashed rgba(200, 200, 200, 0.6); border-radius: 14px; padding: 30px 20px; text-align: center; color: #999; font-size: 12.5px; }}
 
+/* 버튼 공통 (그라데이션 제거, 투명 유리 질감) */
 div[data-testid="stHorizontalBlock"] {{ gap: 6px; }}
 .stButton > button {{
-    border-radius: 10px !important; transition: all 0.3s ease !important;
-    background: rgba(255, 255, 255, 0.4) !important; backdrop-filter: blur(10px) !important;
+    border-radius: 10px !important; 
+    transition: all 0.3s ease !important;
+    background: rgba(255, 255, 255, 0.4) !important;
+    backdrop-filter: blur(10px) !important;
     border: 0.5px solid rgba(200, 200, 200, 0.5) !important;
-    color: #555 !important; font-size: 12.5px !important;
+    color: #555 !important;
+    font-size: 12.5px !important; /* 카테고리 태그 및 버튼 글씨 줄임 */
 }}
-.stButton > button:hover {{ background: rgba(255, 255, 255, 0.6) !important; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important; }}
+.stButton > button:hover {{ 
+    background: rgba(255, 255, 255, 0.6) !important;
+    transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important; 
+}}
 .stButton > button:active {{ transform: translateY(1px); }}
 
+/* Primary 버튼 커스텀 (제출 등) - 은은한 색감 적용 */
 button[kind="primary"] {{
-    background: rgba(240, 128, 162, 0.15) !important; border: 0.5px solid rgba(240, 128, 162, 0.3) !important; color: #D8567F !important;
+    background: rgba(240, 128, 162, 0.15) !important;
+    border: 0.5px solid rgba(240, 128, 162, 0.3) !important; 
+    color: #D8567F !important;
 }}
 button[kind="primary"]:hover {{ background: rgba(240, 128, 162, 0.25) !important; }}
 button[kind="primary"] p {{ color: #D8567F !important; }}
 </style>
-
-<!-- Lucide CDN 스크립트 및 렌더링 옵저버 -->
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>
-    function renderLucideIcons() {{
-        if(window.lucide) {{ window.lucide.createIcons(); }}
-    }}
-    setTimeout(renderLucideIcons, 100);
-    const observer = new MutationObserver(renderLucideIcons);
-    observer.observe(document.body, {{ childList: true, subtree: true }});
-</script>
 """, unsafe_allow_html=True)
 
 
@@ -237,7 +249,7 @@ def init_state():
     if "cat_votes" not in st.session_state:
         st.session_state.cat_votes = {
             "단맛": 35, "짠맛": 28, "매운맛": 4, "쿠키/비스킷": 15, "스낵/칩": 22,
-            "젤리/사탕": 12, "건강한 맛": 5, "탄산음료": 14, "커피/차": 9, "주스/드링크": 6
+            "젤리/사탕": 12, "견과류": 5, "탄산음료": 14, "커피/차": 9, "주스/드링크": 6
         }
     if "admin_auth" not in st.session_state:
         st.session_state.admin_auth = False
@@ -259,7 +271,7 @@ def init_state():
 
 CATEGORIES = [
     "단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩", 
-    "젤리/사탕", "건강한 맛", "탄산음료", "커피/차", "주스/드링크"
+    "젤리/사탕", "견과류", "탄산음료", "커피/차", "주스/드링크"
 ]
 
 init_state()
@@ -313,7 +325,6 @@ def call_gemini(prompt_text):
     except Exception as e:
         return f"요청 실패: {str(e)}"
 
-
 # ═════════════════════════════════════════════
 # 레이아웃 렌더링 파트
 # ═════════════════════════════════════════════
@@ -358,12 +369,12 @@ if st.session_state.page == "main":
     # ── 공지 알림판 ──
     st.markdown("""
     <div class="notice-box">
-        <i data-lucide="bell" style="color:#BE185D;"></i> 다음 다과 입고 예정일은 7월 1일입니다. 필요한 간식은 아래에 요청해 주세요.
+        <span>🍿</span> 다음 다과 입고 예정일은 7월 1일입니다. 필요한 간식은 아래에 요청해 주세요.
     </div>
     """, unsafe_allow_html=True)
 
     # ── Section 1: 이달의 다과 피드백 ──
-    st.markdown('<div class="sec-title"><i data-lucide="cookie"></i> 이달의 다과 피드백</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">🍫 이달의 다과 피드백</div>', unsafe_allow_html=True)
 
     if not st.session_state.snacks:
         st.markdown('<div class="empty-zone">현재 비치된 다과 항목이 없습니다.<br>관리자 페이지에서 리스트를 업데이트해 주세요.</div>', unsafe_allow_html=True)
@@ -379,6 +390,7 @@ if st.session_state.page == "main":
                     tag_html += f'<span class="tag tag-{safe_class}">#{c}</span>'
                 tag_html += '</div>'
                 
+                # 메인 페이지에서는 제품 가격 노출 제거
                 st.markdown(f"""<div class="snack-card">
                     <img src="{s['image']}" onerror="this.src='https://placehold.co/120x120/FFF9C4/FBC02D?text=Snack'">
                     <div class="name">{pin_icon}{s['name']}</div>
@@ -386,7 +398,7 @@ if st.session_state.page == "main":
                 </div>""", unsafe_allow_html=True)
                 
                 has_liked = s["id"] in st.session_state.user_likes
-                btn_label = f"추천 완료 ({s['likes']})" if has_liked else f"재구매 추천 ({s['likes']})"
+                btn_label = f"👍 추천함 ({s['likes']})" if has_liked else f"👍 재구매 ({s['likes']})"
                 btn_type = "primary" if has_liked else "secondary"
                 
                 if st.button(btn_label, key=f"like_{s['id']}", use_container_width=True, type=btn_type):
@@ -407,7 +419,7 @@ if st.session_state.page == "main":
                     st.rerun()
 
     # ── Section 2: 간식 요청하기 ──
-    st.markdown('<div class="sec-title"><i data-lucide="candy"></i> 신규 간식 요청</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">🍭 신규 간식 요청</div>', unsafe_allow_html=True)
 
     sorted_reqs = sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)
     for r in sorted_reqs:
@@ -419,7 +431,7 @@ if st.session_state.page == "main":
                 tag_html += f'<span class="tag tag-{safe_class}" style="margin-right:3px;">#{c}</span>'
             st.markdown(f"""<div class="req-card"><div class="info">
                 <h4>{r['name']}</h4>
-                <div class="meta">{tag_html} · <i class="lucide-small" data-lucide="thumbs-up"></i> {r['votes']}명 요청</div>
+                <div class="meta">{tag_html} · {r['votes']}명 요청</div>
             </div></div>""", unsafe_allow_html=True)
         with col_r2:
             has_voted = r["id"] in st.session_state.user_votes
@@ -439,7 +451,7 @@ if st.session_state.page == "main":
 
     # ── 새 간식 요청 폼 ──
     st.markdown("---")
-    st.markdown('<div class="sec-title"><i data-lucide="cup-soda"></i> 새 간식 요청 등록</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">🥤 새 간식 요청 등록</div>', unsafe_allow_html=True)
 
     st.markdown("**카테고리 태그 지정 (중복 선택 가능)**")
     cat_cols = st.columns(5)
@@ -456,7 +468,7 @@ if st.session_state.page == "main":
 
     with st.form(key="search_form", clear_on_submit=False):
         req_name = st.text_input("원하는 다과/음료명을 입력하세요", placeholder="예: 코카콜라 제로", key="req_name_input")
-        search_clicked = st.form_submit_button("검색하기", use_container_width=True)
+        search_clicked = st.form_submit_button("🔍 제품명 검색", use_container_width=True)
 
     if search_clicked:
         st.session_state.naver_results = []
@@ -475,11 +487,13 @@ if st.session_state.page == "main":
         for ci, item in enumerate(st.session_state.naver_results):
             col_i1, col_i2 = st.columns([4, 1.2])
             with col_i1:
+                # 메인 페이지에서는 가격 제거
                 st.markdown(f"""<div class="cpg-item">
                     <img src="{item['image']}" onerror="this.style.display='none'">
                     <div><div class="cpg-name">{item['name'][:35]}</div></div>
                 </div>""", unsafe_allow_html=True)
             with col_i2:
+                # 검색 결과에서 바로 제출
                 if st.button("제출!", key=f"nv_{ci}", type="primary"):
                     cats_to_assign = list(st.session_state.selected_cats)
                     existing = next((r for r in st.session_state.requests if r["name"] == item['name']), None)
@@ -498,13 +512,14 @@ if st.session_state.page == "main":
                             st.session_state.cat_votes[c] = st.session_state.cat_votes.get(c, 0) + 1
                         st.toast("신규 간식 요청서가 성공적으로 업로드되었습니다.")
                     
+                    # 검색 결과 리스트 초기화 
                     st.session_state.naver_results = []
                     st.session_state.search_input_val = ""
                     st.session_state.selected_cats = []
                     st.rerun()
 
     # ── 대시보드 ──
-    st.markdown('<div class="sec-title"><i data-lucide="file-chart-column-increasing"></i> 취향 분석 대시보드</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">📊 취향 분석 대시보드</div>', unsafe_allow_html=True)
     col_c1, col_c2 = st.columns(2)
 
     with col_c1:
@@ -556,7 +571,7 @@ elif st.session_state.page == "admin":
     """, unsafe_allow_html=True)
 
     if not st.session_state.admin_auth:
-        st.markdown('<div class="sec-title"><i data-lucide="lock"></i> 관리자 모드 개방</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-title">🔐 관리자 모드 개방</div>', unsafe_allow_html=True)
         admin_pw = st.text_input("액세스 패스워드", type="password", key="admin_pw_input")
         
         col_a1, col_a2, col_a3 = st.columns([1.5, 2, 1.5])
@@ -570,7 +585,7 @@ elif st.session_state.page == "admin":
                 else:
                     st.error("액세스 권한 암호가 올바르지 않습니다.")
     else:
-        st.markdown('<div class="sec-title"><i data-lucide="clipboard-list"></i> 실시간 탕비실 비치 품목 제어</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-title">📋 실시간 탕비실 비치 품목 제어</div>', unsafe_allow_html=True)
         if not st.session_state.snacks:
             st.caption("현재 비치된 다과 인프라가 전무합니다.")
         else:
@@ -578,9 +593,10 @@ elif st.session_state.page == "admin":
                 col_m1, col_m2 = st.columns([3, 1])
                 with col_m1:
                     tags_str = " ".join([f"#{c}" for c in s["categories"]])
+                    # 관리자 페이지에서는 가격 정보 포함
                     st.markdown(f"""<div class="req-card" style="margin-bottom:0;"><div class="info">
                         <h4>{s['name']}</h4>
-                        <div class="meta">{tags_str} · <i class="lucide-small" data-lucide="thumbs-up"></i> {s['likes']}표 · {s['price']:,}원</div>
+                        <div class="meta">{tags_str} · 👍 {s['likes']}표 · {s['price']:,}원</div>
                     </div></div>""", unsafe_allow_html=True)
                 with col_m2:
                     is_pinned = s["id"] in st.session_state.pinned_snacks
@@ -589,7 +605,7 @@ elif st.session_state.page == "admin":
                     else:
                         st.session_state.pinned_snacks.discard(s["id"])
 
-        if st.button("비치 명단 업데이트", use_container_width=True):
+        if st.button("🔄 비치 명단 업데이트", use_container_width=True):
             for s in st.session_state.snacks:
                 st.session_state.history_likes[s["name"]] = max(
                     s["likes"], st.session_state.history_likes.get(s["name"], 0)
@@ -599,14 +615,14 @@ elif st.session_state.page == "admin":
             st.rerun()
 
         st.markdown("---")
-        st.markdown('<div class="sec-title"><i data-lucide="message-square-plus"></i> 신규 요청 항목 심사 및 입고 처리</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-title">🙋 신규 요청 항목 심사 및 입고 처리</div>', unsafe_allow_html=True)
         reqs_to_add = []
         for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
             cat_str = "/".join(r['categories']) if r['categories'] else "카테고리 없음"
             if st.checkbox(f"{r['name']} [{cat_str}] - {r['votes']}명 동의", key=f"add_{r['id']}"):
                 reqs_to_add.append(r)
 
-        if st.button("선택 다과 입고", use_container_width=True, type="primary"):
+        if st.button("✅ 선택 다과 입고", use_container_width=True, type="primary"):
             count = 0
             for r in reqs_to_add:
                 if not any(s["name"] == r["name"] for s in st.session_state.snacks):
@@ -628,10 +644,10 @@ elif st.session_state.page == "admin":
             st.rerun()
 
         st.markdown("---")
-        st.markdown('<div class="sec-title"><i data-lucide="package"></i> AI 10만원 최적 장바구니 자동 빌더</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-title">📦 AI 10만원 최적 장바구니 자동 빌더</div>', unsafe_allow_html=True)
         st.caption("네이버 쇼핑 대량 묶음 내의 쿠팡 도매 단가를 타겟팅하여 장바구니를 시뮬레이션합니다.")
 
-        if st.button("추천 조합 시뮬레이션 시작", use_container_width=True, type="primary"):
+        if st.button("🔮 추천 조합 시뮬레이션 시작", use_container_width=True, type="primary"):
             cats = st.session_state.cat_votes
             top_reqs = sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)
 
@@ -666,6 +682,6 @@ elif st.session_state.page == "admin":
         st.markdown("---")
         col_l1, col_l2, col_l3 = st.columns([1.5, 2, 1.5])
         with col_l2:
-            if st.button("세션 로그아웃", use_container_width=True):
+            if st.button("🔒 세션 로그아웃", use_container_width=True):
                 st.session_state.admin_auth = False
                 st.rerun()
