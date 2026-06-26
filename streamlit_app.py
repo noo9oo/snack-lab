@@ -183,14 +183,15 @@ button[kind="primary"]:hover {{ background: rgba(240, 128, 162, 0.25) !important
 button[kind="primary"] p {{ color: #D8567F !important; }}
 </style>
 
+<!-- Lucide CDN 스크립트 및 렌더링 옵저버 -->
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
-    function renderLucideIcons() {
-        if(window.lucide) { window.lucide.createIcons(); }
-    }
+    function renderLucideIcons() {{
+        if(window.lucide) {{ window.lucide.createIcons(); }}
+    }}
     setTimeout(renderLucideIcons, 100);
     const observer = new MutationObserver(renderLucideIcons);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {{ childList: true, subtree: true }});
 </script>
 """, unsafe_allow_html=True)
 
