@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 # ─────────────────────────────────────────────
 st.set_page_config(
     page_title="정책기획팀 Snack Lab",
-    page_icon="🍬",
+    page_icon="🍪",
     layout="centered",
     initial_sidebar_state="collapsed",
 )
@@ -20,6 +20,15 @@ st.set_page_config(
 # Custom CSS (라이트 옐로우 테마, 나눔고딕 폰트 적용, 글래스모피즘)
 # ─────────────────────────────────────────────
 _font_path = pathlib.Path(__file__).parent / "fonts" / "Super Funtime.ttf"
+
+_font_path_2 = pathlib.Path(__file__).parent / "fonts" / "NanumGothic.ttf"
+
+@st.cache_data
+def _load_font_base64(path: pathlib.Path) -> str:
+    return base64.b64encode(path.read_bytes()).decode("utf-8")
+
+_font_base64 = _load_font_base64(_font_path_2)
+
 _font_b64 = base64.b64encode(_font_path.read_bytes()).decode() if _font_path.exists() else ""
 
 _font_css = f"""@font-face {{
@@ -30,11 +39,16 @@ _font_css = f"""@font-face {{
 
 st.markdown("""
 <style>
-/* 나눔고딕 웹폰트 임포트 */
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap');
-html, body { font-family: 'Nanum Gothic', -apple-system, sans-serif; background-color: #fdfdfa; }
-.block-container { max-width: 520px; padding: 0 1rem 4rem; }
-header[data-testid="stHeader"] { background: transparent; }
+@font-face {{
+    font-family: 'NanumGothic';
+    src: url(data:font/ttf;base64,{_font_base64}) format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}}
+html, body {{ font-family: 'NanumGothic', -apple-system, sans-serif; background-color: #fdfdfa; }}
+.block-container {{ max-width: 520px; padding: 0 1rem 4rem; }}
+header[data-testid="stHeader"] {{ background: transparent; }}
+
 
 /* 상단 좌측 미니멀 네비게이션 탭 */
 .nav-wrapper { display: flex; justify-content: flex-start; margin-bottom: 12px; }
@@ -70,7 +84,7 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
     50% { transform: translateY(-10px) rotate(15deg) scale(1.1); }
 }
 
-.logo-sub { font-size: 12px; font-weight: 700; color: #F57F17; letter-spacing: 1px; margin-bottom: 4px; }
+.logo-sub { font-size: 12px; font-weight: 500; color: #F57F17; letter-spacing: 1px; margin-bottom: 4px; }
 .logo-main { display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 2; position: relative; }
 
 /* 글래스 & 플로팅 효과가 적용된 글자 */
@@ -81,11 +95,20 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
 .glass-letter {
     display: inline-block; position: relative;
     font-size: 52px; font-weight: normal; font-family: 'SuperFuntime', 'Nanum Gothic', sans-serif;
-    color: rgba(251, 192, 45, 0.95); padding: 0px 2px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(251,192,45,0.08) 40%, rgba(255,255,255,0.3) 100%);
-    -webkit-background-clip: padding-box; background-clip: padding-box;
-    text-shadow: 0 2px 4px rgba(255,255,255,0.8), 0 -1px 1px rgba(251,192,45,0.2), 0 4px 12px rgba(251,192,45,0.3);
-    filter: drop-shadow(0 4px 8px rgba(251,192,45,0.25)); -webkit-text-stroke: 0.5px rgba(251,192,45,0.4);
+    color: rgba(251, 192, 45, 0.3);
+    padding: 0px 4px;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.85) 0%,
+        rgba(255,255,255,0.85) 10%,
+        rgba(251,192,45,0.08) 15%,
+        rgba(251,192,45,0.04) 50%,
+        rgba(255,255,255,0.35) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.65);
+    text-shadow:
+        0 1px 0 rgba(255,255,255,0.8),
+        0 3px 8px rgba(251,192,45,0.3);
+    filter: drop-shadow(0 4px 6px rgba(251,192,45,0.2));
     cursor: default; line-height: 1;
     animation: floatLetter 3s ease-in-out infinite;
 }
@@ -99,7 +122,7 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
 .glass-letter:nth-child(9) { animation-delay: 0.7s; }
 
 .glass-space { width: 14px; }
-.logo-bottom-text { font-size: 13px; font-weight: 700; color: #8D6E63; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
+.logo-bottom-text { font-size: 13px; font-weight: 500; color: #8D6E63; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
 
 /* 공지 알림판 */
 .notice-box {
@@ -316,10 +339,10 @@ with col_nav:
 if st.session_state.page == "main":
 
     # ── 커스텀 라이트 옐로우 3D 별사탕 SVG 정의 ──
-    star_svg = """
+   star_svg = """
     <svg viewBox="0 0 24 24" width="28" height="28">
         <path fill="#FFF59D" stroke="#FBC02D" stroke-width="1.5" stroke-linejoin="round"
-        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        d="M12 1 L13.72 7.84 L19.78 4.22 L16.16 10.28 L23 12 L16.16 13.72 L19.78 19.78 L13.72 16.16 L12 23 L10.28 16.16 L4.22 19.78 L7.84 13.72 L1 12 L7.84 10.28 L4.22 4.22 L10.28 7.84 Z"/>
     </svg>
     """
 
