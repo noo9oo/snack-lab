@@ -347,7 +347,7 @@ if st.session_state.page == "main":
      """
 
     # ── 로고 배너 ──
-st.markdown(f"""
+    st.markdown(f"""
     <div class="logo-banner">
         <div class="star-candy star-left">{star_svg}</div>
         <div class="star-candy star-right">{star_svg}</div>
