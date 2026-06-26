@@ -339,12 +339,12 @@ with col_nav:
 if st.session_state.page == "main":
 
     # ── 커스텀 라이트 옐로우 3D 별사탕 SVG 정의 ──
-   star_svg = """
-     <svg viewBox="0 0 24 24" width="28" height="28">
-         <path fill="#FFF59D" stroke="#FBC02D" stroke-width="1.5" stroke-linejoin="round"
-         d="M12 1 L13.72 7.84 L19.78 4.22 L16.16 10.28 L23 12 L16.16 13.72 L19.78 19.78 L13.72 16.16 L12 23 L10.28 16.16 L4.22 19.78 L7.84 13.72 L1 12 L7.84 10.28 L4.22 4.22 L10.28 7.84 Z"/>
-     </svg>
-     """
+    star_svg = """
+        <svg viewBox="0 0 24 24" width="28" height="28">
+            <path fill="#FFF59D" stroke="#FBC02D" stroke-width="1.5" stroke-linejoin="round"
+            d="M12 1 L13.72 7.84 L19.78 4.22 L16.16 10.28 L23 12 L16.16 13.72 L19.78 19.78 L13.72 16.16 L12 23 L10.28 16.16 L4.22 19.78 L7.84 13.72 L1 12 L7.84 10.28 L4.22 4.22 L10.28 7.84 Z"/>
+        </svg>
+        """
 
     # ── 로고 배너 ──
     st.markdown(f"""
