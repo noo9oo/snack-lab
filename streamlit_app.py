@@ -280,8 +280,11 @@ def search_naver_shopping(keyword, display=5):
             return results, None
         elif res.status_code == 401:
             return None, "API 인증 실패 — Client ID/Secret을 확인해주세요."
+        elif res.status_code == 403:
+            return None, "API 접근 거부 — 네이버 개발자센터에서 '검색(Shopping)' API가 활성화되어 있는지 확인해주세요."
         else:
-            return None, f"API 오류 (HTTP {res.status_code})"
+            body = res.text[:200] if res.text else ""
+            return None, f"API 오류 (HTTP {res.status_code}): {body}"
     except requests.exceptions.RequestException as e:
         return None, f"네트워크 오류: {str(e)}"
 
@@ -440,14 +443,18 @@ if st.session_state.page == "main":
         if not req_name:
             st.warning("검색할 과자 이름을 먼저 입력해주세요.")
         else:
+            st.session_state.search_query = req_name
             with st.spinner("네이버 쇼핑에서 검색 중..."):
-                results, err = search_naver_shopping(req_name)
-            if err:
-                st.warning(err)
-            elif results:
-                st.session_state.naver_results = results
-            else:
-                st.info("검색 결과가 없습니다.")
+                try:
+                    results, err = search_naver_shopping(req_name)
+                    if err:
+                        st.error(f"검색 오류: {err}")
+                    elif results:
+                        st.session_state.naver_results = results
+                    else:
+                        st.info("검색 결과가 없습니다.")
+                except Exception as e:
+                    st.error(f"예외 발생: {str(e)}")
 
     if st.session_state.get("naver_results"):
         st.markdown("**검색 결과** (클릭하여 선택)")
