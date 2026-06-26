@@ -31,20 +31,21 @@ _font_css = f"""@font-face {{
 st.markdown("""
 <style>
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css');
-html, body, [class*="st-"] { font-family: 'Pretendard', -apple-system, sans-serif; }
+html, body { font-family: 'Pretendard', -apple-system, sans-serif; }
 .block-container { max-width: 520px; padding: 0 1rem 4rem; }
 header[data-testid="stHeader"] { background: transparent; }
 
 /* 로고 배너 */
 .logo-banner {
-    text-align: center; padding: 14px 16px 12px;
-    background: radial-gradient(ellipse at center, #f0f7c4 0%, #e4f5df 40%, #d8f0d2 70%, #c8e8c4 100%);
-    border-radius: 0 0 16px 16px; margin: -1rem -1rem 1rem;
+    text-align: center; padding: 8px 16px 8px;
+    background: #FFFFFF;
+    border-radius: 0 0 16px 16px; margin: -1rem -1rem 0.8rem;
+    border-bottom: 1px solid #E8E8EE;
 }
-.logo-sub { font-size: 10px; color: #6a9a5b; letter-spacing: 1px; margin-bottom: 0; }
+.logo-sub { font-size: 10px; color: #999; letter-spacing: 1px; margin-bottom: 0; }
 .logo-main {
     display: flex; align-items: center; justify-content: center; gap: 3px;
-    padding: 4px 0 2px; margin: 0 auto; width: 100%;
+    padding: 8px 0 0; margin: 0 auto; width: 100%;
 }
 .glass-letter {
     display: inline-block; position: relative;
@@ -369,7 +370,7 @@ if st.session_state.page == "main":
         <div class="logo-sub">정책기획팀</div>
         <div class="logo-main"><span class="glass-letter" data-char="S">S</span><span class="glass-letter" data-char="n">n</span><span class="glass-letter" data-char="a">a</span><span class="glass-letter" data-char="c">c</span><span class="glass-letter" data-char="k">k</span><span class="glass-space"></span><span class="glass-letter" data-char="L">L</span><span class="glass-letter" data-char="a">a</span><span class="glass-letter" data-char="b">b</span></div>
         <div class="logo-reflect">Snack Lab</div>
-        <p style="font-size:10px;color:#6a9a5b;margin-top:2px">🍪 최적의 간식조합 찾기</p>
+        <p style="font-size:10px;color:#999;margin-top:0">🍪 최적의 간식조합 찾기</p>
     </div>
     """, unsafe_allow_html=True)
 
