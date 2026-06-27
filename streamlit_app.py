@@ -84,7 +84,7 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
     50% { transform: translateY(-10px) rotate(15deg) scale(1.1); }
 }
 
-.logo-sub { font-size: 12px; font-weight: 500; color: #F57F17; letter-spacing: 1px; margin-bottom: 4px; }
+.logo-sub { font-size: 12px; font-weight: 700; color: #F57F17; letter-spacing: 1px; margin-bottom: 4px; }
 .logo-main { display: flex; align-items: center; justify-content: center; gap: 4px; z-index: 2; position: relative; }
 
 /* 글래스 & 플로팅 효과가 적용된 글자 */
@@ -122,7 +122,7 @@ div[data-testid="stHorizontalBlock"].nav-block { gap: 4px !important; width: aut
 .glass-letter:nth-child(9) { animation-delay: 0.7s; }
 
 .glass-space { width: 14px; }
-.logo-bottom-text { font-size: 13px; font-weight: 500; color: #8D6E63; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
+.logo-bottom-text { font-size: 11px; font-weight: 700; color: #8D6E63; margin-top: 8px; margin-bottom: 0; z-index: 2; position: relative; }
 
 /* 공지 알림판 */
 .notice-box {
