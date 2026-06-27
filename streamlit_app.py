@@ -48,9 +48,12 @@ svg_thumbs_up = load_svg("thumbs-up.svg")
 svg_user_key = load_svg("user-round-key.svg")
 svg_clip_pen = load_svg("clipboard-pen.svg")
 svg_clip_check = load_svg("clipboard-check.svg")
-svg_pin = load_svg("📌.svg")  # 필요 시 파일 이름 맞춰 변경하세요
-svg_search = load_svg("🔍.svg")
-svg_lock = load_svg("🔒.svg")
+# ※ 기존에 "📌.svg" 처럼 이모지 문자로 된 파일명은 GitHub/서버 환경에 따라
+#   인코딩이 깨질 수 있어서 영문 파일명으로 변경했습니다.
+#   assets 폴더에 pin.svg / search.svg / lock.svg 로 업로드해 주세요.
+svg_pin = load_svg("pin.svg")
+svg_search = load_svg("search.svg")
+svg_lock = load_svg("lock.svg")
 
 # ─────────────────────────────────────────────
 # Custom CSS
@@ -76,18 +79,27 @@ html, body {{
 * {{ font-weight: 300 !important; }}
 
 .block-container {{ max-width: 520px; padding: 0 1rem 4rem; }}
-header[data-testid="stHeader"] {{ background: transparent; }}
 
-/* ── 네비게이션 탭 (HOME / MANAGEMENT) ── */
-.nav-wrapper {{ display: flex; justify-content: flex-start; margin-bottom: 12px; }}
-div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: auto !important; }}
-.nav-block .stButton > button {{
+/* ── 헤더: 투명 처리 + 클릭 통과시키기 ──
+   주의: top padding이 0이라 페이지 맨 위 콘텐츠(HOME/MANAGEMENT)가
+   투명 헤더와 같은 자리에 겹치는데, background만 투명하게 하면 헤더가
+   여전히 그 자리에서 클릭을 가로챕니다. pointer-events: none으로
+   헤더가 클릭을 통과시키게 해서 바로 아래 버튼이 눌리게 합니다.
+   (사이드바를 쓰지 않으므로 헤더의 메뉴 버튼이 막혀도 영향 없음) */
+header[data-testid="stHeader"] {{ background: transparent; pointer-events: none; }}
+
+/* ── 네비게이션 탭 (HOME / MANAGEMENT) ──
+   기존 .nav-block 클래스는 실제 DOM에 존재하지 않는 죽은 선택자였습니다.
+   key가 있는 위젯에는 Streamlit이 자동으로 st-key-<key> 클래스를 붙여주므로
+   그걸 직접 타게팅합니다. */
+[class*="st-key-btn_nav_"] button {{
     font-size: 10px !important; padding: 2px 8px !important;
     min-height: 24px !important; height: 24px !important; line-height: 24px !important;
     background: transparent !important; border: none !important; box-shadow: none !important;
     color: #475569 !important; border-radius: 0 !important;
 }}
-.nav-block .stButton > button:hover {{ text-decoration: underline !important; transform: none !important; }}
+[class*="st-key-btn_nav_"] button:hover {{ text-decoration: underline !important; }}
+[class*="st-key-btn_nav_"] button:active {{ transform: none !important; }}
 
 /* ── 메인 배너 및 로고 (오직 이곳만 Skeuomorphism 유지) ── */
 .skeuo-box {{
@@ -106,11 +118,11 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
 .logo-main-wrapper {{ display: inline-block; padding: 10px 25px; margin-bottom: 6px; }}
 
 .logo-letters {{
-    font-size: 52px; font-family: 'SuperFuntime', sans-serif; font-weight: 300 !important;
+    font-size: 52px; font-family: 'SuperFuntime', sans-serif; font-weight: 400 !important;
     color: rgba(251, 192, 45, 0.3);
     line-height: 1; letter-spacing: 2px;
 }}
-.logo-bottom-text {{ font-size: 11px; font-weight: 300 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
+.logo-bottom-text {{ font-size: 11px; font-weight: 350 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
 
 /* 플로팅 에셋 SVG */
 .float-asset {{ position: absolute; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }}
@@ -128,11 +140,11 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
     50% {{ transform: translateY(-8px) rotate(10deg); }}
 }}
 
-/* ── 공지 알림판 ── */
+/* ── 공지 알림판 (틸/시안 톤) ── */
 .notice-box {{
     padding: 14px 18px; margin: 0 -0.5rem 1.8rem;
-    background: rgba(118, 70, 74, 0.15);
-    border: 1px solid rgba(118, 70, 49, 1);
+    background: rgba(138, 221, 234, 0.25);
+    border: 1px solid rgba(37, 189, 212, 1);
     border-radius: 12px; font-size: 13.5px; color: #333333;
     display: flex; align-items: center; gap: 8px;
 }}
@@ -145,6 +157,13 @@ div[data-testid="stHorizontalBlock"].nav-block {{ gap: 4px !important; width: au
     margin: 1.8rem 0 0.8rem; display: flex; align-items: center; gap: 6px; color: #8D6E63; 
 }}
 .sec-title img {{ width: 20px; height: 20px; }}
+
+/* ── 작은 보조 라벨 (검색/보안 아이콘용) ── */
+.field-hint {{
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11px; color: #8D6E63; margin: 0 0 4px;
+}}
+.field-hint img {{ width: 13px; height: 13px; }}
 
 /* ── 카드 스타일 (채우기+테두리 통일, 그림자 제거) ── */
 .snack-card, .req-card, .cpg-item, .hot-trend-box {{
@@ -202,6 +221,14 @@ button[kind="primary"] {{
 }}
 button[kind="primary"] p {{ color: #4E342E !important; }}
 
+/* '+나도' / '취소' 투표 버튼 — 폭 대폭 축소 */
+[class*="st-key-vote_"] button {{
+    padding: 0 4px !important;
+    font-size: 10.5px !important;
+    min-height: 22px !important;
+    height: 22px !important;
+}}
+
 /* 입력 폼 태그 텍스트 크기 */
 .form-tag-label {{ font-size: 13pt; color: #4E342E; margin: 10px 0 5px; font-weight: 400 !important; }}
 
@@ -221,7 +248,6 @@ button[kind="primary"] p {{ color: #4E342E !important; }}
 # ─────────────────────────────────────────────
 @st.cache_data(ttl=3600)
 def fetch_snack_image(name):
-    # (이미지 크롤링 로직은 기존과 동일)
     try:
         client_id = st.secrets.get("NAVER_CLIENT_ID", "")
         client_secret = st.secrets.get("NAVER_CLIENT_SECRET", "")
@@ -255,46 +281,44 @@ def search_naver_shopping(keyword, display=5):
     except Exception as e:
         return None, f"네트워크 오류: {str(e)}"
 
-# ★ Fallback 기능을 갖춘 제미나이 호출 함수 (429 에러 완벽 대응)
+# ★ call_gemini 함수 — 상태코드별로 다른 메시지를 보여주도록 수정
+#   - gemini-2.0-flash 모델은 이미 서비스 종료되어 항상 실패했었음 → gemini-2.5-flash로 교체
+#   - 429(쿼터 초과)일 때만 짧은 재시도 안내 문구를 보여줌
+#   - 그 외 에러는 실제 상태코드/메시지를 그대로 보여줘서 원인 진단이 가능하게 함
 def call_gemini(prompt_text, mode="cart"):
-    mock_cart = """API 할당량 초과(429)로 인하여 시스템이 자체 구성한 시뮬레이션입니다.
-
-1. 📊 직원 취향 분석 요약
-단맛과 짠맛 계열 과자 선호도가 높으며, 업무 집중을 위한 탄산음료/커피 수요가 있습니다.
-
-2. 🛒 추천 장바구니
-| 상품명 | 카테고리 | 쿠팡기준가 | 수량 | 소계 |
-|---|---|---|---|---|
-| 포카칩 어니언 대용량 | 짠맛, 스낵 | 14,500원 | 2 | 29,000원 |
-| 칠성사이다 제로 번들 | 단맛, 탄산 | 18,900원 | 1 | 18,900원 |
-| 마이쮸 딸기 대용량 | 단맛, 젤리 | 12,000원 | 1 | 12,000원 |
-| 오레오 씬즈 바닐라무스 | 단맛, 쿠키 | 15,000원 | 2 | 30,000원 |
-
-3. 💰 총액 / 잔액
-총액: 89,900원 / 잔액: 10,100원
-
-4. 📝 추천 사유
-최다 득표를 기록한 베스트셀러 다과를 대용량 번들팩으로 구성하여 예산 효율을 극대화했습니다."""
-
-    mock_trend = "#팀장님원픽|모두가 호불호 없이 좋아하는 바로 그 다과!"
-
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-        body = {
-            "contents": [{"parts": [{"text": prompt_text}]}],
-            "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500},
-        }
-        res = requests.post(url, json=body, timeout=15)
-        
-        # 429 에러 등 실패 시 준비된 Mock 데이터 반환
-        if res.status_code != 200:
-            return mock_cart if mode == "cart" else mock_trend
-            
-        return res.json()["candidates"][0]["content"]["parts"][0]["text"]
-        
     except Exception:
-        return mock_cart if mode == "cart" else mock_trend
+        return "⚠️ GEMINI_API_KEY가 설정되지 않았습니다. Streamlit Secrets를 확인해 주세요."
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    body = {
+        "contents": [{"parts": [{"text": prompt_text}]}],
+        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500},
+    }
+
+    try:
+        res = requests.post(url, json=body, timeout=15)
+    except Exception as e:
+        return f"⚠️ 네트워크 오류: {str(e)}"
+
+    if res.status_code == 429:
+        return "API 오류: 3분 후 다시 시도해주세요"
+
+    if res.status_code != 200:
+        try:
+            err_detail = res.json().get("error", {}).get("message", res.text[:200])
+        except Exception:
+            err_detail = res.text[:200]
+        return f"⚠️ API 오류 (HTTP {res.status_code}): {err_detail}"
+
+    try:
+        return res.json()["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception:
+        return "⚠️ 응답 형식을 해석할 수 없습니다. (API 응답 구조 변경 가능성)"
+
+def is_error_text(text):
+    return text.startswith("API 오류") or text.startswith("⚠️")
 
 
 # ─────────────────────────────────────────────
@@ -331,7 +355,7 @@ init_state()
 # 레이아웃 렌더링 파트
 # ═════════════════════════════════════════════
 
-# 좌측 상단 탭 (명시적 키 지정으로 클릭 안되는 현상 해결)
+# 좌측 상단 탭
 col_nav, col_empty = st.columns([2, 3])
 with col_nav:
     nav_cols = st.columns(2)
@@ -346,7 +370,6 @@ with col_nav:
 
 if st.session_state.page == "main":
 
-    # 마크다운 렌더링 에러를 막기 위해 HTML 내의 불필요한 공백/들여쓰기를 제거한 안전한 문자열 조합
     html_banner = f"""<div class="logo-banner">
 <img class="float-asset f-l-1" src="{svg_astroid}">
 <img class="float-asset f-l-2" src="{svg_badge}">
@@ -372,7 +395,7 @@ if st.session_state.page == "main":
 
     # ── HOT 다과 트렌드 큐레이션 ──
     if st.session_state.hot_trends:
-        st.markdown(f'<div class="sec-title"><img src="{svg_sparkles}"> 🔥 HOT 다과 트렌드 큐레이션</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sec-title"><img src="{svg_sparkles}"> HOT 다과 트렌드 큐레이션</div>', unsafe_allow_html=True)
         for ht in st.session_state.hot_trends:
             st.markdown(f"""
             <div class="hot-trend-box">
@@ -415,7 +438,7 @@ if st.session_state.page == "main":
     st.markdown(f'<div class="sec-title"><img src="{svg_candy}"> 신규 간식 요청</div>', unsafe_allow_html=True)
 
     for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
-        col_r1, col_r2 = st.columns([5.5, 1.5]) # 대폭 줄인 버튼 너비 비율
+        col_r1, col_r2 = st.columns([6.5, 1.0])  # 투표 버튼 폭 대폭 축소
         with col_r1:
             tag_html = "".join([f'<span class="tag" style="margin-right:3px;">#{c}</span>' for c in r["categories"]])
             st.markdown(f"""<div class="req-card"><div class="info">
@@ -437,6 +460,7 @@ if st.session_state.page == "main":
     st.markdown("---")
     st.markdown(f'<div class="sec-title"><img src="{svg_cup_soda}"> 새 간식 요청 등록</div>', unsafe_allow_html=True)
 
+    st.markdown(f'<div class="field-hint"><img src="{svg_search}"> 제품명으로 검색</div>', unsafe_allow_html=True)
     with st.form(key="search_form", clear_on_submit=False):
         req_name = st.text_input("원하는 다과/음료명을 입력하세요", placeholder="예: 코카콜라 제로", key="req_name_input")
         search_clicked = st.form_submit_button("검색하기", use_container_width=True)
@@ -527,6 +551,7 @@ elif st.session_state.page == "admin":
 
     if not st.session_state.admin_auth:
         st.markdown(f'<div class="sec-title"><img src="{svg_user_key}"> 관리자 모드 개방</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="field-hint"><img src="{svg_lock}"> 보안 접속</div>', unsafe_allow_html=True)
         admin_pw = st.text_input("액세스 패스워드", type="password", key="admin_pw_input")
         col_a1, col_a2, col_a3 = st.columns([1.5, 2, 1.5])
         with col_a2:
@@ -542,7 +567,7 @@ elif st.session_state.page == "admin":
             st.session_state.notice_date = new_date
             st.toast("입고 예정일이 수정되었습니다.")
 
-        st.markdown(f'<div class="sec-title"><img src="{svg_sparkles}"> 🔥 HOT 다과 트렌드 큐레이션 추가</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sec-title"><img src="{svg_sparkles}"> HOT 다과 트렌드 큐레이션 추가</div>', unsafe_allow_html=True)
         hot_name = st.text_input("다과 이름 입력 (자동생성 트리거)")
         
         col_h1, col_h2 = st.columns([1, 1])
@@ -552,13 +577,15 @@ elif st.session_state.page == "admin":
                     with st.spinner("AI가 멘트를 작성중입니다..."):
                         prompt = f"회사 탕비실 다과 '{hot_name}'을/를 직원들에게 추천하는 해시태그 1개와 짧은 홍보 문구(25자 이내)를 작성해줘. 형식은 반드시 '태그|문구' 기호로 구분지어 대답해."
                         result = call_gemini(prompt, mode="trend")
-                        try:
-                            t_tag, t_desc = result.split("|", 1)
-                        except Exception:
-                            t_tag, t_desc = "#요즘대세", result
-                        
-                        st.session_state.hot_trends.append({"name": hot_name, "tag": t_tag.strip(), "desc": t_desc.strip()})
-                        st.toast("트렌드 큐레이션이 홈에 추가되었습니다.")
+                        if is_error_text(result):
+                            st.error(result)
+                        else:
+                            try:
+                                t_tag, t_desc = result.split("|", 1)
+                            except Exception:
+                                t_tag, t_desc = "#요즘대세", result
+                            st.session_state.hot_trends.append({"name": hot_name, "tag": t_tag.strip(), "desc": t_desc.strip()})
+                            st.toast("트렌드 큐레이션이 홈에 추가되었습니다.")
         with col_h2:
             if st.button("전체 초기화 (삭제)", use_container_width=True):
                 st.session_state.hot_trends = []
@@ -610,7 +637,10 @@ elif st.session_state.page == "admin":
                 st.session_state.ai_result = call_gemini(prompt, mode="cart")
 
         if st.session_state.ai_result:
-            st.markdown(f'<div class="ai-result">{st.session_state.ai_result}</div>', unsafe_allow_html=True)
+            if is_error_text(st.session_state.ai_result):
+                st.error(st.session_state.ai_result)
+            else:
+                st.markdown(f'<div class="ai-result">{st.session_state.ai_result}</div>', unsafe_allow_html=True)
 
         st.markdown("---")
         col_l1, col_l2, col_l3 = st.columns([1.5, 2, 1.5])
