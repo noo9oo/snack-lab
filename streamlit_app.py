@@ -6,7 +6,6 @@ import re
 import json
 import requests
 from urllib.parse import quote
-import plotly.graph_objects as go
 
 # ─────────────────────────────────────────────
 # 페이지 설정
@@ -44,7 +43,6 @@ svg_sparkles = load_svg("sparkles.svg")
 svg_megaphone = load_svg("megaphone.svg")
 svg_candy = load_svg("candy.svg")
 svg_cup_soda = load_svg("cup-soda.svg")
-svg_chart = load_svg("file-chart-column-increasing.svg")
 svg_thumbs_up = load_svg("thumbs-up.svg")
 svg_user_key = load_svg("user-round-key.svg")
 svg_clip_pen = load_svg("clipboard-pen.svg")
@@ -481,6 +479,7 @@ def init_state():
     
     if "notice_date" not in st.session_state: st.session_state.notice_date = "7월 1일"
     if "hot_trends" not in st.session_state: st.session_state.hot_trends = []
+    if "hot_preview" not in st.session_state: st.session_state.hot_preview = None
 
 CATEGORIES = ["단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩", "젤리/사탕", "건강한 맛", "탄산음료", "커피/차", "주스/드링크"]
 
@@ -666,24 +665,6 @@ if st.session_state.page == "main":
                 st.session_state.naver_results = []
                 st.rerun()
 
-    # ── 대시보드 ──
-    st.markdown(f'<div class="sec-title"><img src="{svg_chart}"> 직원 취향 분석 대시보드</div>', unsafe_allow_html=True)
-    col_c1, col_c2 = st.columns(2)
-
-    with col_c1:
-        pie_colors = ['#FFB3BA', '#D8B4E2', '#BAE1FF', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#FFC4E1', '#B4F0E5', '#E2F0CB', '#FFD8B4']
-        fig_donut = go.Figure(data=[go.Pie(labels=list(st.session_state.cat_votes.keys()), values=list(st.session_state.cat_votes.values()), hole=0.6, marker=dict(colors=pie_colors), textinfo="percent", textfont_size=10)])
-        fig_donut.update_layout(showlegend=False, margin=dict(t=5, b=5, l=5, r=5), height=180, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
-
-    with col_c2:
-        chart_data = dict(st.session_state.history_likes)
-        for s in st.session_state.snacks: chart_data[s["name"]] = max(s["likes"], chart_data.get(s["name"], 0))
-        sorted_chart = sorted(chart_data.items(), key=lambda x: x[1], reverse=True)[:5]
-        fig_bar = go.Figure(data=[go.Bar(x=[item[0][:4] for item in sorted_chart], y=[item[1] for item in sorted_chart], marker_color="rgba(150, 150, 150, 0.4)", marker_cornerradius=10)])
-        fig_bar.update_layout(showlegend=False, margin=dict(t=5, b=5, l=5, r=5), height=180, bargap=0.55, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", xaxis=dict(tickfont_size=9), yaxis=dict(tickfont_size=9, gridcolor="rgba(200,200,200,0.1)"))
-        st.plotly_chart(fig_bar, use_container_width=True, config={"displayModeBar": False})
-
 # ═════════════════════════════════════════════
 # 관리자 페이지
 # ═════════════════════════════════════════════
@@ -724,27 +705,60 @@ elif st.session_state.page == "admin":
 
         st.markdown(f'<div class="sec-title"><img src="{svg_heart}"> HOT 다과 트렌드 큐레이션 추가</div>', unsafe_allow_html=True)
         hot_name = st.text_input("다과 이름 입력 (자동생성 트리거)")
-        
-        col_h1, col_h2 = st.columns([1, 1])
-        with col_h1:
-            if st.button("AI 자동 생성 및 추가", use_container_width=True):
-                if hot_name:
-                    with st.spinner("AI가 멘트를 작성중입니다..."):
-                        prompt = f"회사 탕비실 다과 '{hot_name}'을/를 직원들에게 추천하는 해시태그 1개와 짧은 홍보 문구(25자 이내)를 작성해줘. 형식은 반드시 '태그|문구' 기호로 구분지어 대답해."
-                        result = call_gemini(prompt, mode="trend")
-                        if is_error_text(result):
-                            st.error(result)
-                        else:
-                            try:
-                                t_tag, t_desc = result.split("|", 1)
-                            except Exception:
-                                t_tag, t_desc = "#요즘대세", result
-                            img_url = fetch_snack_image(hot_name)
-                            st.session_state.hot_trends.append({"name": hot_name, "tag": t_tag.strip(), "desc": t_desc.strip(), "image": img_url})
-                            st.toast("트렌드 큐레이션이 홈에 추가되었습니다.")
-        with col_h2:
-            if st.button("전체 초기화 (삭제)", use_container_width=True):
-                st.session_state.hot_trends = []
+
+        if st.button("미리보기 생성", use_container_width=True):
+            if not hot_name:
+                st.warning("다과 이름을 입력해 주세요.")
+            else:
+                with st.spinner("AI 멘트 작성 및 이미지 검색 중..."):
+                    prompt = f"회사 탕비실 다과 '{hot_name}'을/를 직원들에게 추천하는 해시태그 1개와 짧은 홍보 문구(25자 이내)를 작성해줘. 형식은 반드시 '태그|문구' 기호로 구분지어 대답해."
+                    result = call_gemini(prompt, mode="trend")
+                    if is_error_text(result):
+                        st.error(result)
+                        st.session_state.hot_preview = None
+                    else:
+                        try:
+                            t_tag, t_desc = result.split("|", 1)
+                        except Exception:
+                            t_tag, t_desc = "#요즘대세", result
+                        img_url = fetch_snack_image(hot_name)
+                        st.session_state.hot_preview = {"name": hot_name, "tag": t_tag.strip(), "desc": t_desc.strip(), "image": img_url}
+
+        # 홈 화면에 바로 올리기 전에, 검색이 잘 됐는지(특히 이미지) 미리 확인하는 단계
+        if st.session_state.get("hot_preview"):
+            p = st.session_state.hot_preview
+            st.caption("아래는 홈 화면에 실제로 표시될 미리보기입니다. 확인 후 추가해 주세요.")
+            if p.get("image"):
+                img_html = f'<img class="hot-img" src="{p["image"]}">'
+            else:
+                img_html = '<div class="hot-img" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:9px;">이미지 없음</div>'
+            st.markdown(f"""
+            <div class="hot-trend-box">
+                {img_html}
+                <div>
+                    <span class="hot-name">{p['name']}</span>
+                    <span class="hot-tag">{p['tag']}</span>
+                    <div class="hot-desc">{p['desc']}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            if not p.get("image"):
+                st.warning("이미지 검색 결과가 없습니다. 이름을 다르게 입력해서 다시 미리보기 해보시거나, 이미지 없이 추가할 수 있습니다.")
+
+            col_p1, col_p2 = st.columns(2)
+            with col_p1:
+                if st.button("✅ 홈에 추가", use_container_width=True, type="primary"):
+                    st.session_state.hot_trends.append(p)
+                    st.session_state.hot_preview = None
+                    st.toast("트렌드 큐레이션이 홈에 추가되었습니다.")
+                    st.rerun()
+            with col_p2:
+                if st.button("취소", use_container_width=True):
+                    st.session_state.hot_preview = None
+                    st.rerun()
+
+        if st.button("전체 초기화 (삭제)", use_container_width=True):
+            st.session_state.hot_trends = []
 
         st.markdown("---")
         st.markdown(f'<div class="sec-title"><img src="{svg_clip_check}"> 실시간 탕비실 비치 품목 제어</div>', unsafe_allow_html=True)
