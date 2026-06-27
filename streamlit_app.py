@@ -172,7 +172,7 @@ div[data-testid="stHorizontalBlock"] > div {{
     .logo-bottom-text {{ font-size: 9px; letter-spacing: 1.5px; }}
 }}
 
-.logo-bottom-text {{ font-size: 11px; font-weight: 300 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
+.logo-bottom-text {{ font-size: 10px; font-weight: 300 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
 
 /* 플로팅 에셋 SVG */
 .float-asset {{ position: absolute; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }}
@@ -246,11 +246,11 @@ div[data-testid="stHorizontalBlock"] > div {{
 
 /* '좋아요'(snack-card) / '나도'(req-card) / '선택'(검색결과) 버튼 — 폰트/모서리 통일 */
 [class*="st-key-like_"] button {{
-    font-size: 12.5px !important;
+    font-size: 11px !important;
     padding: 3px 14px !important;
     min-height: 26px !important;
     height: 26px !important;
-    border-radius: 6px !important;
+    border-radius: 7px !important;
     width: auto !important;
 }}
 [class*="st-key-like_"] {{ display: flex; justify-content: center; }}
