@@ -6,6 +6,8 @@ import re
 import json
 import requests
 from urllib.parse import quote
+import gspread
+from google.oauth2.service_account import Credentials
 
 # ─────────────────────────────────────────────
 # 페이지 설정
@@ -114,16 +116,20 @@ div[data-testid="stHorizontalBlock"] > div {{
 }}
 
 /* ── 네비게이션 탭 ── */
+[class*="st-key-btn_nav_"] {{ overflow: visible !important; min-width: 0 !important; }}
 [class*="st-key-btn_nav_"] button {{
-    font-size: 9px !important; padding: 1px 6px !important;
+    font-size: 9px !important; padding: 1px 5px !important;
     min-height: 22px !important; height: 22px !important; line-height: 22px !important;
     background: transparent !important; border: none !important; outline: none !important;
     box-shadow: none !important; color: #475569 !important; border-radius: 0 !important;
-    white-space: nowrap !important;
+    white-space: nowrap !important; width: auto !important; min-width: 0 !important;
 }}
 [class*="st-key-btn_nav_"] button:hover {{ text-decoration: underline !important; }}
 [class*="st-key-btn_nav_"] button:focus {{ outline: none !important; box-shadow: none !important; border: none !important; }}
 [class*="st-key-btn_nav_"] button:active {{ transform: none !important; }}
+@media (max-width: 380px) {{
+    [class*="st-key-btn_nav_"] button {{ font-size: 7.5px !important; padding: 1px 3px !important; }}
+}}
 
 /* ── 메인 로고: 글자별 스큐어모피즘 + 플로팅 ── */
 .logo-banner {{
@@ -233,22 +239,22 @@ div[data-testid="stHorizontalBlock"] > div {{
     flex-wrap: wrap; gap: 3px;
 }}
 
-/* '좋아요' 버튼(snack-card) / '나도' 버튼(req-card) — 텍스트 크기에 맞게, 더 둥글게 */
+/* '좋아요' 버튼(snack-card) / '나도' 버튼(req-card) — 모서리 더 둥글게, 폰트는 다과 이름 크기와 동일하게 */
 [class*="st-key-like_"] button {{
-    font-size: 10px !important;
-    padding: 3px 10px !important;
-    min-height: 22px !important;
-    height: 22px !important;
-    border-radius: 14px !important;
+    font-size: 13px !important;
+    padding: 3px 14px !important;
+    min-height: 26px !important;
+    height: 26px !important;
+    border-radius: 20px !important;
     width: auto !important;
 }}
 [class*="st-key-like_"] {{ display: flex; justify-content: center; }}
 [class*="st-key-vote_"] button {{
-    padding: 2px 10px !important;
-    font-size: 10px !important;
-    min-height: 20px !important;
-    height: 20px !important;
-    border-radius: 14px !important;
+    padding: 2px 12px !important;
+    font-size: 12.5px !important;
+    min-height: 24px !important;
+    height: 24px !important;
+    border-radius: 20px !important;
     width: auto !important;
     margin-top: 5px !important;
 }}
@@ -297,29 +303,20 @@ button[kind="primary"] {{
 }}
 button[kind="primary"] p {{ color: #4E342E !important; }}
 
-/* 카테고리 선택 버튼 — 텍스트 길이에 맞는 폭으로, 한 줄에 최대한 채워서 줄바꿈(테트리스처럼) */
-[class*="st-key-cat_tag_flow"] {{
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
+/* 카테고리 선택: st.pills 네이티브 위젯 사용 (자체적으로 줄바꿈/흐름 처리됨) — 살짜 더 촘촘하게만 조정 */
+div[data-testid="stPills"] {{
+    gap: 4px !important;
 }}
-[class*="st-key-cat_tag_flow"] .stButton {{
-    width: auto !important;
-    flex: 0 0 auto !important;
+div[data-testid="stPills"] button {{
+    font-size: 11px !important;
+    padding: 3px 12px !important;
+    min-height: unset !important;
 }}
-[class*="st-key-form_cat_"] button {{
-    font-size: 10px !important;
-    padding: 4px 10px !important;
-    white-space: nowrap !important;
-    width: auto !important;
-    border-radius: 12px !important;
-}}
-[class*="st-key-form_cat_"] button[kind="primary"] {{
+div[data-testid="stPills"] button[aria-checked="true"] {{
     background: #8D6E63 !important;
-    border: 1px solid #8D6E63 !important;
+    border-color: #8D6E63 !important;
     color: #ffffff !important;
 }}
-[class*="st-key-form_cat_"] button[kind="primary"] p {{ color: #ffffff !important; }}
 
 .form-tag-label {{
     font-size: 15px; color: #8D6E63; margin: 10px 0 5px; font-weight: 400 !important;
@@ -461,6 +458,78 @@ def call_gemini(prompt_text, mode="cart"):
 def is_error_text(text):
     return text.startswith("API 오류") or text.startswith("⚠️")
 
+# ─────────────────────────────────────────────
+# Google Sheets 영구 저장소
+# st.session_state는 그 브라우저 탭이 서버와 맺은 연결에서만 사는 임시 메모리라
+# 앱이 재시작되거나 다른 브라우저로 접속하면 공유가 안 됨. 공지일/비치목록처럼
+# "모두가 같이 보고, 재시작해도 남아있어야 하는" 데이터는 구글 시트에 저장한다.
+# 시트에는 key, value 두 컬럼만 두고, value에는 JSON으로 직렬화한 값을 넣는다.
+# ─────────────────────────────────────────────
+PERSISTENT_KEYS = ["notice_date", "snacks", "requests", "hot_trends", "pinned_snacks", "cat_votes", "history_likes"]
+
+@st.cache_resource
+def _get_gsheet():
+    try:
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        gc = gspread.authorize(creds)
+        sheet = gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
+        return sheet
+    except Exception:
+        return None
+
+@st.cache_data(ttl=10)
+def load_persistent_state():
+    """구글 시트에서 모든 키를 읽어온다. 10초 캐시라서 누가 값을 바꿔도
+    다른 사람 화면에는 최대 10초 정도 후에 반영된다. 시트 연결이 안 되면
+    빈 딕셔너리를 반환하고, 그 경우 코드 쪽 기본값으로 동작한다."""
+    sheet = _get_gsheet()
+    if sheet is None:
+        return {}
+    try:
+        rows = sheet.get_all_records()
+        data = {}
+        for row in rows:
+            k, v = row.get("key"), row.get("value")
+            if k and v:
+                try:
+                    data[k] = json.loads(v)
+                except Exception:
+                    pass
+        return data
+    except Exception:
+        return {}
+
+def save_persistent_key(key, value):
+    """딱 한 개의 키만 구글 시트에 업데이트(있으면 갱신, 없으면 새 행 추가)하고
+    캐시를 비워서 다음 읽기부터 최신값이 반영되게 한다. 실패하면 False를
+    반환할 뿐 예외를 던지지 않음 — 시트 연결이 잠깐 끊겨도 앱 자체는 멈추지 않게."""
+    sheet = _get_gsheet()
+    if sheet is None:
+        return False
+    try:
+        value_json = json.dumps(value, ensure_ascii=False)
+        cell = sheet.find(key, in_column=1)
+        if cell:
+            sheet.update_cell(cell.row, 2, value_json)
+        else:
+            sheet.append_row([key, value_json])
+        load_persistent_state.clear()
+        return True
+    except Exception:
+        return False
+
+def persist(key):
+    """st.session_state[key]의 현재 값을 구글 시트에 저장. set은 JSON이
+    안 되니 리스트로 바꿔서 저장한다."""
+    value = st.session_state[key]
+    if isinstance(value, set):
+        value = list(value)
+    ok = save_persistent_key(key, value)
+    if not ok:
+        st.toast("⚠️ 구글 시트 저장 실패 — 이번 변경사항이 영구 저장되지 않았어요.", icon="⚠️")
+
 TARGET_BUDGET = 90000
 MAX_BUDGET = 100000
 MAX_QTY_PER_ITEM = 5
@@ -531,16 +600,21 @@ def build_cart_combos(cats, top_reqs):
 # Session State 초기화 
 # ─────────────────────────────────────────────
 def init_state():
-    if "snacks" not in st.session_state: st.session_state.snacks = []
-    if "history_likes" not in st.session_state: st.session_state.history_likes = {}
-    if "pinned_snacks" not in st.session_state: st.session_state.pinned_snacks = set()
+    persisted = load_persistent_state()
+
+    if "snacks" not in st.session_state:
+        st.session_state.snacks = persisted.get("snacks", [])
+    if "history_likes" not in st.session_state:
+        st.session_state.history_likes = persisted.get("history_likes", {})
+    if "pinned_snacks" not in st.session_state:
+        st.session_state.pinned_snacks = set(persisted.get("pinned_snacks", []))
     if "requests" not in st.session_state:
-        st.session_state.requests = [
+        st.session_state.requests = persisted.get("requests", [
             {"id": 1, "name": "포카칩 어니언", "categories": ["짠맛", "스낵/칩"], "votes": 5},
             {"id": 2, "name": "마이쮸 딸기", "categories": ["단맛", "젤리/사탕"], "votes": 3},
-        ]
+        ])
     if "cat_votes" not in st.session_state:
-        st.session_state.cat_votes = {"단맛": 35, "짠맛": 28, "매운맛": 4, "쿠키/비스킷": 15, "스낵/칩": 22, "젤리/사탕": 12, "건강한 맛": 5, "탄산음료": 14, "커피/차": 9, "주스/드링크": 6}
+        st.session_state.cat_votes = persisted.get("cat_votes", {"단맛": 35, "짠맛": 28, "매운맛": 4, "쿠키/비스킷": 15, "스낵/칩": 22, "젤리/사탕": 12, "건강한 맛": 5, "탄산음료": 14, "커피/차": 9, "주스/드링크": 6})
     if "admin_auth" not in st.session_state: st.session_state.admin_auth = False
     if "page" not in st.session_state: st.session_state.page = "main"
     if "ai_result" not in st.session_state: st.session_state.ai_result = ""
@@ -551,9 +625,12 @@ def init_state():
     if "user_likes" not in st.session_state: st.session_state.user_likes = set()
     if "user_votes" not in st.session_state: st.session_state.user_votes = set()
     if "selected_cats" not in st.session_state: st.session_state.selected_cats = [] 
+    if "cat_pills" not in st.session_state: st.session_state.cat_pills = []
     
-    if "notice_date" not in st.session_state: st.session_state.notice_date = "7월 1일"
-    if "hot_trends" not in st.session_state: st.session_state.hot_trends = []
+    if "notice_date" not in st.session_state:
+        st.session_state.notice_date = persisted.get("notice_date", "7월 1일")
+    if "hot_trends" not in st.session_state:
+        st.session_state.hot_trends = persisted.get("hot_trends", [])
     if "hot_preview" not in st.session_state: st.session_state.hot_preview = None
 
 CATEGORIES = ["단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩", "젤리/사탕", "건강한 맛", "탄산음료", "커피/차", "주스/드링크"]
@@ -564,7 +641,7 @@ init_state()
 # 레이아웃 렌더링 파트
 # ═════════════════════════════════════════════
 
-col_nav, col_empty = st.columns([2, 3])
+col_nav, col_empty = st.columns([3, 2])
 with col_nav:
     nav_cols = st.columns(2)
     with nav_cols[0]:
@@ -642,6 +719,7 @@ if st.session_state.page == "main":
                     else:
                         s["likes"] += 1
                         st.session_state.user_likes.add(s["id"])
+                    persist("snacks")
                     st.rerun()
 
     # ── Section 2: 신규 간식 요청 (이달의 다과 피드백처럼 2열 그리드) ──
@@ -664,6 +742,7 @@ if st.session_state.page == "main":
                 else:
                     r["votes"] += 1
                     st.session_state.user_votes.add(r["id"])
+                persist("requests")
                 st.rerun()
 
     # ── 새 간식 요청 등록 폼 ──
@@ -685,13 +764,15 @@ if st.session_state.page == "main":
                 elif results: st.session_state.naver_results = results
 
     st.markdown('<div class="form-tag-label"># 카테고리 태그 지정 (중복 선택 가능)</div>', unsafe_allow_html=True)
-    with st.container(key="cat_tag_flow"):
-        for cat in CATEGORIES:
-            is_sel = cat in st.session_state.selected_cats
-            if st.button(f"#{cat}", key=f"form_cat_{cat}", type="primary" if is_sel else "secondary"):
-                if is_sel: st.session_state.selected_cats.remove(cat)
-                else: st.session_state.selected_cats.append(cat)
-                st.rerun()
+    pills_selection = st.pills(
+        "카테고리 선택",
+        CATEGORIES,
+        selection_mode="multi",
+        format_func=lambda c: f"#{c}",
+        label_visibility="collapsed",
+        key="cat_pills",
+    )
+    st.session_state.selected_cats = list(pills_selection) if pills_selection else []
 
     if st.session_state.get("naver_results"):
         st.caption("선택하면 바로 신규 간식 요청에 등록됩니다.")
@@ -710,8 +791,10 @@ if st.session_state.page == "main":
                         existing["votes"] += 1
                     else:
                         st.session_state.requests.append({"id": int(time.time() * 1000), "name": item["name"], "categories": cats_now, "votes": 1})
+                    persist("requests")
                     st.session_state.selected_naver = None
                     st.session_state.selected_cats = []
+                    st.session_state.cat_pills = []
                     st.session_state.search_input_val = ""
                     st.session_state.naver_results = []
                     st.toast(f"'{item['name']}' 요청이 등록되었습니다.")
@@ -733,8 +816,10 @@ if st.session_state.page == "main":
                 if existing: existing["votes"] += 1
                 else:
                     st.session_state.requests.append({"id": int(time.time() * 1000), "name": name, "categories": cats_selected, "votes": 1})
+                persist("requests")
                 st.session_state.selected_naver = None
                 st.session_state.selected_cats = []
+                st.session_state.cat_pills = []
                 st.session_state.search_input_val = ""
                 st.session_state.naver_results = []
                 st.rerun()
@@ -775,6 +860,7 @@ elif st.session_state.page == "admin":
             sel_day = st.selectbox("일", list(range(1, 32)), index=default_day - 1, key="notice_day_sel")
         if st.button("예정일 업데이트"):
             st.session_state.notice_date = f"{sel_month}월 {sel_day}일"
+            persist("notice_date")
             st.toast("입고 예정일이 수정되었습니다.")
 
         st.markdown(f'<div class="sec-title"><img src="{svg_heart}"> HOT 다과 트렌드 큐레이션 추가</div>', unsafe_allow_html=True)
@@ -823,6 +909,7 @@ elif st.session_state.page == "admin":
             with col_p1:
                 if st.button("✅ 홈에 추가", use_container_width=True, type="primary"):
                     st.session_state.hot_trends.append(p)
+                    persist("hot_trends")
                     st.session_state.hot_preview = None
                     st.toast("트렌드 큐레이션이 홈에 추가되었습니다.")
                     st.rerun()
@@ -833,6 +920,7 @@ elif st.session_state.page == "admin":
 
         if st.button("전체 초기화 (삭제)", use_container_width=True):
             st.session_state.hot_trends = []
+            persist("hot_trends")
 
         st.markdown("---")
         st.markdown(f'<div class="sec-title"><img src="{svg_clip_check}"> 실시간 탕비실 비치 품목 제어</div>', unsafe_allow_html=True)
@@ -877,6 +965,7 @@ elif st.session_state.page == "admin":
                                 "price": item["price"] if item["price"] else 2000,
                                 "likes": 0,
                             })
+                            persist("snacks")
                             st.toast(f"'{item['name']}' 비치 목록에 추가되었습니다.")
                         st.session_state.admin_naver_results = []
                         st.rerun()
@@ -893,13 +982,18 @@ elif st.session_state.page == "admin":
                     </div></div>""", unsafe_allow_html=True)
                 with col_m2:
                     is_pinned = s["id"] in st.session_state.pinned_snacks
-                    if st.checkbox("📌 고정", value=is_pinned, key=f"pin_chk_{s['id']}"): st.session_state.pinned_snacks.add(s["id"])
-                    else: st.session_state.pinned_snacks.discard(s["id"])
+                    new_pinned = st.checkbox("📌 고정", value=is_pinned, key=f"pin_chk_{s['id']}")
+                    if new_pinned != is_pinned:
+                        if new_pinned: st.session_state.pinned_snacks.add(s["id"])
+                        else: st.session_state.pinned_snacks.discard(s["id"])
+                        persist("pinned_snacks")
 
         st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
         if st.button("비치 명단 업데이트", use_container_width=True):
             for s in st.session_state.snacks: st.session_state.history_likes[s["name"]] = max(s["likes"], st.session_state.history_likes.get(s["name"], 0))
             st.session_state.snacks = [s for s in st.session_state.snacks if s["id"] in st.session_state.pinned_snacks]
+            persist("history_likes")
+            persist("snacks")
             st.rerun()
 
         st.markdown("---")
@@ -914,6 +1008,7 @@ elif st.session_state.page == "admin":
                 with col_t2:
                     if st.button("삭제", key=f"del_req_{r['id']}"):
                         st.session_state.requests = [x for x in st.session_state.requests if x["id"] != r["id"]]
+                        persist("requests")
                         st.rerun()
             else:
                 if st.checkbox(f"{r['name']} - {r['votes']}명 동의", key=f"add_{r['id']}"): reqs_to_add.append(r)
@@ -925,6 +1020,8 @@ elif st.session_state.page == "admin":
                     st.session_state.snacks.append({"id": int(time.time() * 1000) + count, "name": r["name"], "categories": r["categories"], "image": fetch_snack_image(r["name"]), "price": 2000, "likes": 0})
                     count += 1
             st.session_state.requests = [r for r in st.session_state.requests if r["id"] not in [r_add["id"] for r_add in reqs_to_add]]
+            persist("snacks")
+            persist("requests")
             st.rerun()
 
         st.markdown("---")
