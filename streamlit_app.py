@@ -102,6 +102,17 @@ header[data-testid="stHeader"] {{
 div[data-testid="stToolbar"] {{ display: none !important; }}
 div[data-testid="stDecoration"] {{ display: none !important; }}
 
+/* ── 모바일(640px 미만)에서 st.columns가 자동으로 세로 스택되는 Streamlit 기본
+   동작을 강제로 끈다. 이게 날짜 드롭다운/카드 그리드/고정 체크박스 등이
+   모바일에서 다 한 줄씩 무너져 보이던 공통 원인이었음. ── */
+div[data-testid="stHorizontalBlock"] {{
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+}}
+div[data-testid="stHorizontalBlock"] > div {{
+    min-width: 0 !important;
+}}
+
 /* ── 네비게이션 탭 ── */
 [class*="st-key-btn_nav_"] button {{
     font-size: 9px !important; padding: 1px 6px !important;
@@ -141,6 +152,13 @@ div[data-testid="stDecoration"] {{ display: none !important; }}
 @keyframes letterFloat {{
     0%, 100% {{ transform: translateY(0) rotate(0deg); }}
     50% {{ transform: translateY(-5px) rotate(2deg); }}
+}}
+
+/* 모바일: 'Snack Lab' 줄바꿈 방지를 위해 글자 크기/간격 축소, 하단 문구도 축소 */
+@media (max-width: 480px) {{
+    .logo-letter {{ font-size: 36px; margin: 0 2px; }}
+    .logo-space {{ width: 10px; }}
+    .logo-bottom-text {{ font-size: 9px; letter-spacing: 1.5px; }}
 }}
 
 .logo-bottom-text {{ font-size: 11px; font-weight: 350 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
@@ -188,26 +206,53 @@ div[data-testid="stDecoration"] {{ display: none !important; }}
 }}
 .snack-card {{ padding: 14px; text-align: center; margin-bottom: 8px; }}
 .snack-card img.snack-img {{ width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: transparent; }}
-.snack-card .name {{ font-size: 13px; color: #4E342E; margin: 6px 0 2px; }}
+.snack-card .name {{ font-size: 13px; color: #4E342E; margin: 6px 0 2px; overflow-wrap: break-word; word-break: break-word; }}
 .snack-card .price {{ font-size: 11px; color: #8D6E63; margin-bottom: 6px; }}
 
 .req-card {{ padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }}
-.req-card .info h4 {{ font-size: 13px; margin: 0 0 4px 0; color: #4E342E; }}
-.req-card .info .meta {{ font-size: 11px; color: #8D6E63; display: flex; align-items: center; gap:4px; }}
+.req-card .info h4 {{ font-size: 13px; margin: 0 0 4px 0; color: #4E342E; overflow-wrap: break-word; word-break: break-word; }}
+.req-card .info .meta {{ font-size: 11px; color: #8D6E63; display: flex; align-items: center; gap:4px; flex-wrap: wrap; }}
 
-/* '좋아요' 버튼(snack-card) / '나도' 버튼(req-card) — 폰트 더 축소 */
+/* 비치 명단 '고정' 체크박스: 줄바꿈 없이 한 줄로 */
+[class*="st-key-pin_chk_"] label {{ white-space: nowrap !important; }}
+[class*="st-key-pin_chk_"] label p {{ font-size: 12px !important; white-space: nowrap !important; }}
+
+/* 신규 간식 요청 2열 그리드 카드 */
+.req-card-grid {{
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 6px;
+}}
+.req-card-grid h4 {{
+    font-size: 12.5px; margin: 0 0 4px 0; color: #4E342E;
+    overflow-wrap: break-word; word-break: break-word;
+}}
+.req-card-grid .meta {{
+    font-size: 10.5px; color: #8D6E63; display: flex; align-items: center;
+    flex-wrap: wrap; gap: 3px;
+}}
+
+/* '좋아요' 버튼(snack-card) / '나도' 버튼(req-card) — 텍스트 크기에 맞게, 더 둥글게 */
 [class*="st-key-like_"] button {{
     font-size: 10px !important;
-    padding: 2px 6px !important;
-    min-height: 24px !important;
-    height: 24px !important;
+    padding: 3px 10px !important;
+    min-height: 22px !important;
+    height: 22px !important;
+    border-radius: 14px !important;
+    width: auto !important;
 }}
+[class*="st-key-like_"] {{ display: flex; justify-content: center; }}
 [class*="st-key-vote_"] button {{
-    padding: 0 6px !important;
-    font-size: 9px !important;
+    padding: 2px 10px !important;
+    font-size: 10px !important;
     min-height: 20px !important;
     height: 20px !important;
+    border-radius: 14px !important;
+    width: auto !important;
+    margin-top: 5px !important;
 }}
+[class*="st-key-vote_"] {{ display: flex; justify-content: center; }}
 
 /* ── 카테고리 태그 (뱃지) ── */
 .tag-container {{ display: flex; flex-wrap: nowrap; justify-content: center; gap: 3px; margin-bottom: 6px; overflow: hidden; }}
@@ -252,11 +297,22 @@ button[kind="primary"] {{
 }}
 button[kind="primary"] p {{ color: #4E342E !important; }}
 
-/* 카테고리 선택 버튼 — 한 줄 + 선택 시 눌린 표시 */
+/* 카테고리 선택 버튼 — 텍스트 길이에 맞는 폭으로, 한 줄에 최대한 채워서 줄바꿈(테트리스처럼) */
+[class*="st-key-cat_tag_flow"] {{
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+}}
+[class*="st-key-cat_tag_flow"] .stButton {{
+    width: auto !important;
+    flex: 0 0 auto !important;
+}}
 [class*="st-key-form_cat_"] button {{
     font-size: 10px !important;
-    padding: 4px 2px !important;
+    padding: 4px 10px !important;
     white-space: nowrap !important;
+    width: auto !important;
+    border-radius: 12px !important;
 }}
 [class*="st-key-form_cat_"] button[kind="primary"] {{
     background: #8D6E63 !important;
@@ -267,6 +323,12 @@ button[kind="primary"] p {{ color: #4E342E !important; }}
 
 .form-tag-label {{
     font-size: 15px; color: #8D6E63; margin: 10px 0 5px; font-weight: 400 !important;
+}}
+
+/* 텍스트 입력창에 아주 옅은 회색 테두리 — 입력 가능한 칸이라는 걸 알 수 있게 */
+div[data-baseweb="input"], div[data-baseweb="base-input"] {{
+    border: 1px solid rgba(0,0,0,0.15) !important;
+    border-radius: 8px !important;
 }}
 
 .field-hint {{
@@ -282,14 +344,27 @@ button[kind="primary"] p {{ color: #4E342E !important; }}
 .hot-trend-box .hot-tag {{ font-size: 11px; color: #8D6E63; }}
 .hot-trend-box .hot-desc {{ font-size: 12.5px; color: #555; margin-top: 4px; }}
 
-/* ── 월/일 선택 select box ── */
+/* ── 월/일 선택 select box: 가로 폭 대폭 축소 (전역 row 고정과 함께 한 줄에 들어오게) ── */
 [class*="st-key-notice_month_sel"], [class*="st-key-notice_day_sel"] {{
     font-size: 13px;
+    max-width: 78px;
+}}
+[class*="st-key-notice_month_sel"] div[data-baseweb="select"],
+[class*="st-key-notice_day_sel"] div[data-baseweb="select"] {{
+    min-width: 0 !important;
 }}
 
 /* 신규 요청 항목 심사: 카테고리 전용 요청 줄 + 일반 제품명 체크박스 줄 폰트를 13px로 통일 */
-.tag-only-req {{ font-size: 13px; color: #4E342E; padding: 6px 0; }}
+.tag-only-req {{ font-size: 13px; color: #4E342E; padding: 6px 0; overflow-wrap: break-word; word-break: break-word; }}
 .tag-only-req .hint {{ color: #999; font-size: 10.5px; margin-left: 4px; }}
+[class*="st-key-del_req_"] button {{
+    font-size: 10px !important;
+    padding: 2px 8px !important;
+    min-height: 22px !important;
+    height: 22px !important;
+    width: auto !important;
+}}
+[class*="st-key-del_req_"] {{ display: flex; justify-content: flex-end; }}
 [class*="st-key-add_"] p {{ font-size: 13px !important; color: #4E342E !important; }}
 
 .icon-inline {{ width: 14px; height: 14px; vertical-align: middle; }}
@@ -560,7 +635,7 @@ if st.session_state.page == "main":
                 
                 has_liked = s["id"] in st.session_state.user_likes
                 # '나도' 버튼처럼 카운트는 카드 쪽에 따로 표시하고, 버튼 라벨은 단순하게
-                if st.button("좋아요 취소" if has_liked else "좋아요", key=f"like_{s['id']}", use_container_width=True):
+                if st.button("좋아요 취소" if has_liked else "좋아요", key=f"like_{s['id']}"):
                     if has_liked:
                         s["likes"] -= 1
                         st.session_state.user_likes.remove(s["id"])
@@ -569,20 +644,20 @@ if st.session_state.page == "main":
                         st.session_state.user_likes.add(s["id"])
                     st.rerun()
 
-    # ── Section 2: 신규 간식 요청 ──
+    # ── Section 2: 신규 간식 요청 (이달의 다과 피드백처럼 2열 그리드) ──
     st.markdown(f'<div class="sec-title"><img src="{svg_candy}"> 신규 간식 요청</div>', unsafe_allow_html=True)
 
-    for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
-        col_r1, col_r2 = st.columns([6.3, 1.2])
-        with col_r1:
+    sorted_reqs = sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)
+    req_cols = st.columns(2)
+    for i, r in enumerate(sorted_reqs):
+        with req_cols[i % 2]:
             tag_html = "".join([f'<span class="tag" style="margin-right:3px;">#{c}</span>' for c in r["categories"]])
-            st.markdown(f"""<div class="req-card"><div class="info">
+            st.markdown(f"""<div class="req-card-grid">
                 <h4>{r['name']}</h4>
                 <div class="meta">{tag_html} · <img class="icon-inline" src="{svg_thumbs_up}"> {r['votes']}명 요청</div>
-            </div></div>""", unsafe_allow_html=True)
-        with col_r2:
+            </div>""", unsafe_allow_html=True)
             has_voted = r["id"] in st.session_state.user_votes
-            if st.button("취소" if has_voted else "나도", key=f"vote_{r['id']}", use_container_width=True):
+            if st.button("취소" if has_voted else "나도", key=f"vote_{r['id']}"):
                 if has_voted:
                     r["votes"] -= 1
                     st.session_state.user_votes.remove(r["id"])
@@ -610,11 +685,10 @@ if st.session_state.page == "main":
                 elif results: st.session_state.naver_results = results
 
     st.markdown('<div class="form-tag-label"># 카테고리 태그 지정 (중복 선택 가능)</div>', unsafe_allow_html=True)
-    cat_cols = st.columns(5)
-    for ci, cat in enumerate(CATEGORIES):
-        with cat_cols[ci % 5]:
+    with st.container(key="cat_tag_flow"):
+        for cat in CATEGORIES:
             is_sel = cat in st.session_state.selected_cats
-            if st.button(f"#{cat}", key=f"form_cat_{cat}", use_container_width=True, type="primary" if is_sel else "secondary"):
+            if st.button(f"#{cat}", key=f"form_cat_{cat}", type="primary" if is_sel else "secondary"):
                 if is_sel: st.session_state.selected_cats.remove(cat)
                 else: st.session_state.selected_cats.append(cat)
                 st.rerun()
@@ -811,7 +885,7 @@ elif st.session_state.page == "admin":
         if not st.session_state.snacks: st.caption("현재 비치된 다과 인프라가 전무합니다.")
         else:
             for s in st.session_state.snacks:
-                col_m1, col_m2 = st.columns([3, 1])
+                col_m1, col_m2 = st.columns([2.4, 1.3])
                 with col_m1:
                     st.markdown(f"""<div class="req-card" style="margin-bottom:8px;"><div class="info">
                         <h4>{s['name']}</h4>
@@ -834,11 +908,11 @@ elif st.session_state.page == "admin":
         for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
             is_tag_only = r["name"].strip().startswith("#")
             if is_tag_only:
-                col_t1, col_t2 = st.columns([4, 1])
+                col_t1, col_t2 = st.columns([4.6, 0.9])
                 with col_t1:
                     st.markdown(f'<div class="tag-only-req">{r["name"]} - {r["votes"]}명 동의 <span class="hint">(카테고리 전용 요청)</span></div>', unsafe_allow_html=True)
                 with col_t2:
-                    if st.button("삭제", key=f"del_req_{r['id']}", use_container_width=True):
+                    if st.button("삭제", key=f"del_req_{r['id']}"):
                         st.session_state.requests = [x for x in st.session_state.requests if x["id"] != r["id"]]
                         st.rerun()
             else:
