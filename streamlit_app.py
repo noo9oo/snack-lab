@@ -5,6 +5,7 @@ import pathlib
 import re
 import json
 import requests
+from urllib.parse import quote
 import plotly.graph_objects as go
 
 # ─────────────────────────────────────────────
@@ -103,7 +104,7 @@ header[data-testid="stHeader"] {{
 div[data-testid="stToolbar"] {{ display: none !important; }}
 div[data-testid="stDecoration"] {{ display: none !important; }}
 
-/* ── 네비게이션 탭 (HOME / MANAGEMENT) ── */
+/* ── 네비게이션 탭 ── */
 [class*="st-key-btn_nav_"] button {{
     font-size: 9px !important; padding: 1px 6px !important;
     min-height: 22px !important; height: 22px !important; line-height: 22px !important;
@@ -129,7 +130,7 @@ div[data-testid="stDecoration"] {{ display: none !important; }}
 .logo-letter {{
     display: inline-block;
     font-size: 52px; font-family: 'SuperFuntime', sans-serif; font-weight: 400 !important;
-    color: rgba(254, 239, 129, 1);
+    color: rgba(253, 210, 98, 1);
     line-height: 1;
     margin: 0 5px;
     text-shadow:
@@ -162,7 +163,7 @@ div[data-testid="stDecoration"] {{ display: none !important; }}
     50% {{ transform: translateY(-8px) rotate(10deg); }}
 }}
 
-/* ── 공지 알림판: 테두리 더 가늘게(저알파), 폰트 축소, 아래 간격 좁힘 ── */
+/* ── 공지 알림판 ── */
 .notice-box {{
     padding: 11px 16px; margin: 0 -0.5rem 0.8rem;
     background: rgba(138, 221, 234, 0.12);
@@ -196,12 +197,18 @@ div[data-testid="stDecoration"] {{ display: none !important; }}
 .req-card .info h4 {{ font-size: 13px; margin: 0 0 4px 0; color: #4E342E; }}
 .req-card .info .meta {{ font-size: 11px; color: #8D6E63; display: flex; align-items: center; gap:4px; }}
 
-/* '나도'/'취소' 투표 버튼 — 작게 유지 */
+/* '좋아요' 버튼(snack-card) / '나도' 버튼(req-card) — 폰트 더 축소 */
+[class*="st-key-like_"] button {{
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    min-height: 24px !important;
+    height: 24px !important;
+}}
 [class*="st-key-vote_"] button {{
     padding: 0 6px !important;
-    font-size: 11px !important;
-    min-height: 22px !important;
-    height: 22px !important;
+    font-size: 9px !important;
+    min-height: 20px !important;
+    height: 20px !important;
 }}
 
 /* ── 카테고리 태그 (뱃지) ── */
@@ -247,7 +254,7 @@ button[kind="primary"] {{
 }}
 button[kind="primary"] p {{ color: #4E342E !important; }}
 
-/* 카테고리 선택 버튼 — 한 줄 유지 + 선택된 상태(primary) 시각적으로 눌린 표시 */
+/* 카테고리 선택 버튼 — 한 줄 + 선택 시 눌린 표시 */
 [class*="st-key-form_cat_"] button {{
     font-size: 10px !important;
     padding: 4px 2px !important;
@@ -270,21 +277,22 @@ button[kind="primary"] p {{ color: #4E342E !important; }}
 }}
 .field-hint img {{ width: 13px; height: 13px; }}
 
-/* ── HOT 다과 트렌드 큐레이션 박스 (이미지 포함) ── */
+/* ── HOT 다과 트렌드 큐레이션 박스 ── */
 .hot-trend-box {{ padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }}
 .hot-img {{ width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: #f5f5f0; }}
 .hot-trend-box .hot-name {{ font-size: 14px; color: #4E342E; font-weight: 400 !important; margin-right: 6px; }}
 .hot-trend-box .hot-tag {{ font-size: 11px; color: #8D6E63; }}
 .hot-trend-box .hot-desc {{ font-size: 12.5px; color: #555; margin-top: 4px; }}
 
-/* ── 월/일 선택 select box 폭 축소 보조 ── */
+/* ── 월/일 선택 select box ── */
 [class*="st-key-notice_month_sel"], [class*="st-key-notice_day_sel"] {{
     font-size: 13px;
 }}
 
-/* 신규 요청 항목 심사: 카테고리 전용 요청(이름이 #로 시작) 한 줄 표시 */
+/* 신규 요청 항목 심사: 카테고리 전용 요청 줄 + 일반 제품명 체크박스 줄 폰트를 13px로 통일 */
 .tag-only-req {{ font-size: 13px; color: #4E342E; padding: 6px 0; }}
 .tag-only-req .hint {{ color: #999; font-size: 10.5px; margin-left: 4px; }}
+[class*="st-key-add_"] p {{ font-size: 13px !important; color: #4E342E !important; }}
 
 .icon-inline {{ width: 14px; height: 14px; vertical-align: middle; }}
 </style>
@@ -335,6 +343,12 @@ def search_naver_shopping(keyword, display=5):
     except Exception as e:
         return None, f"네트워크 오류: {str(e)}"
 
+def naver_search_link(query):
+    """개별 상품의 정확한 구매 링크 대신, 그 이름으로 네이버 쇼핑을 검색한 결과창 링크.
+    Naver API의 item.link보다 안정적이고, 굳이 정확한 구매 페이지일 필요는 없다는
+    요청에 따라 이 방식으로 충분함."""
+    return f"https://search.shopping.naver.com/search/all?query={quote(query)}"
+
 def call_gemini(prompt_text, mode="cart"):
     try:
         api_key = st.secrets["GEMINI_API_KEY"]
@@ -374,18 +388,23 @@ def call_gemini(prompt_text, mode="cart"):
 def is_error_text(text):
     return text.startswith("API 오류") or text.startswith("⚠️")
 
+TARGET_BUDGET = 90000
+MAX_BUDGET = 100000
+MAX_QTY_PER_ITEM = 5
+
 def build_cart_combos(cats, top_reqs):
-    """AI에게 후보 3안(상품명+수량+이유)만 받고, 실제 가격/링크는 네이버 실검색으로 채운다.
-    AI가 링크를 직접 만들면 존재하지 않는 가짜 URL을 지어낼 위험이 있어서,
-    AI는 '추천'까지만 하고 실제 구매 정보는 검증 가능한 API로 따로 가져온다."""
+    """AI에게는 '후보 상품명'만 받는다 (가격은 AI가 추측하면 늘 어긋나므로 맡기지 않음).
+    실제 가격은 네이버 실검색으로 받아오고, 9만원에 최대한 가깝게(10만원은 절대 안 넘게)
+    채우는 계산은 파이썬에서 직접 한다 — 그래야 산수가 항상 정확하다."""
     prompt = (
-        f"탕비실 예산은 최대 90,000원까지만 채우고, 어떤 경우에도 100,000원을 넘기지 않게 "
-        f"과자/음료 조합을 서로 다른 컨셉으로 3가지 후보로 추천해줘.\n"
+        f"탕비실에 채울 과자/음료 후보 상품명을 추천해줘. 가격이나 수량은 신경쓰지 말고 "
+        f"상품명만 골라줘 (가격은 따로 실제 데이터로 확인할 거라 추측하지 않아도 됨).\n"
         f"선호도(카테고리:득표수): {cats}\n"
         f"요청 많은 품목: {top_reqs}\n"
+        f"서로 다른 컨셉의 3가지 묶음으로, 각 묶음마다 후보 상품명 6~8개와 묶음 컨셉을 짧게 설명해줘.\n"
         f"다른 설명 없이 아래 JSON 형식으로만 답해:\n"
-        '{"combos":[{"items":[{"name":"상품명","qty":2}],"reason":"한 문장 이유"}]}\n'
-        f"combos는 정확히 3개, 각 combo의 items는 4~6개로."
+        '{"combos":[{"theme":"묶음 컨셉 한 문장","candidates":["상품명1","상품명2"]}]}\n'
+        f"combos는 정확히 3개."
     )
     raw = call_gemini(prompt, mode="cart")
     if is_error_text(raw):
@@ -394,26 +413,44 @@ def build_cart_combos(cats, top_reqs):
     cleaned = re.sub(r"^```json\s*|```$", "", raw.strip(), flags=re.MULTILINE).strip()
     try:
         data = json.loads(cleaned)
-        combos = data.get("combos", [])
+        combos_raw = data.get("combos", [])
     except Exception:
-        return raw, None  # JSON 파싱 실패 시 원문이라도 보여줌
+        return raw, None
 
     enriched = []
-    for combo in combos[:3]:
+    for combo in combos_raw[:3]:
+        # 후보별 실제 네이버 가격 조회
+        priced = []
+        for name in combo.get("candidates", []):
+            results, _ = search_naver_shopping(name, display=1)
+            if results and results[0]["price"]:
+                priced.append({"name": name, "price": results[0]["price"]})
+        priced.sort(key=lambda x: x["price"])
+
+        # 1차: 싼 것부터 1개씩 담아서 10만원 안 넘게
         items_out = []
         total = 0
-        for it in combo.get("items", []):
-            name = it.get("name", "")
-            qty = max(1, int(it.get("qty", 1)))
-            results, _ = search_naver_shopping(name, display=1)
-            if results:
-                real = results[0]
-                price, link = real["price"], real["link"]
-            else:
-                price, link = 0, ""
-            total += price * qty
-            items_out.append({"name": name, "qty": qty, "price": price, "link": link})
-        enriched.append({"items": items_out, "reason": combo.get("reason", ""), "total": total})
+        for c in priced:
+            if total + c["price"] <= MAX_BUDGET:
+                items_out.append({"name": c["name"], "qty": 1, "price": c["price"]})
+                total += c["price"]
+
+        # 2차: 9만원에 가까워질 때까지 기존 아이템 수량을 늘려서 채움 (최대 10만원, 1개당 최대 5개)
+        changed = True
+        while total < TARGET_BUDGET and changed:
+            changed = False
+            for it in items_out:
+                if it["qty"] < MAX_QTY_PER_ITEM and total + it["price"] <= MAX_BUDGET:
+                    it["qty"] += 1
+                    total += it["price"]
+                    changed = True
+                    if total >= TARGET_BUDGET:
+                        break
+
+        for it in items_out:
+            it["link"] = naver_search_link(it["name"])
+
+        enriched.append({"items": items_out, "reason": combo.get("theme", ""), "total": total})
     return None, enriched
 
 
@@ -487,7 +524,6 @@ if st.session_state.page == "main":
 </div>"""
     st.markdown(html_notice, unsafe_allow_html=True)
 
-    # ── HOT 다과 트렌드 큐레이션 (제품 이미지 포함) ──
     if st.session_state.hot_trends:
         st.markdown(f'<div class="sec-title"><img src="{svg_heart}"> HOT 다과 트렌드 큐레이션</div>', unsafe_allow_html=True)
         for ht in st.session_state.hot_trends:
@@ -523,7 +559,6 @@ if st.session_state.page == "main":
                 </div>""", unsafe_allow_html=True)
                 
                 has_liked = s["id"] in st.session_state.user_likes
-                # '재구매'/'추천함' → '좋아요'/'좋아요 취소'
                 if st.button(f"좋아요 취소 ({s['likes']})" if has_liked else f"좋아요 ({s['likes']})", key=f"like_{s['id']}", use_container_width=True):
                     if has_liked:
                         s["likes"] -= 1
@@ -546,7 +581,6 @@ if st.session_state.page == "main":
             </div></div>""", unsafe_allow_html=True)
         with col_r2:
             has_voted = r["id"] in st.session_state.user_votes
-            # 이모지 -> 다시 텍스트로 환원
             if st.button("취소" if has_voted else "나도", key=f"vote_{r['id']}", use_container_width=True):
                 if has_voted:
                     r["votes"] -= 1
@@ -579,7 +613,6 @@ if st.session_state.page == "main":
     for ci, cat in enumerate(CATEGORIES):
         with cat_cols[ci % 5]:
             is_sel = cat in st.session_state.selected_cats
-            # 선택된 상태는 type="primary"로 시각적으로 눌린 표시
             if st.button(f"#{cat}", key=f"form_cat_{cat}", use_container_width=True, type="primary" if is_sel else "secondary"):
                 if is_sel: st.session_state.selected_cats.remove(cat)
                 else: st.session_state.selected_cats.append(cat)
@@ -678,7 +711,6 @@ elif st.session_state.page == "admin":
         m = re.match(r"(\d+)월\s*(\d+)일", st.session_state.notice_date)
         default_month = int(m.group(1)) if m else 7
         default_day = int(m.group(2)) if m else 1
-        # 월/일 select box 폭을 좁은 컬럼에 넣어서 줄임 (선택박스 자체는 폭 100% 채움)
         col_d1, col_d2, col_d_empty = st.columns([1, 1, 3])
         with col_d1:
             sel_month = st.selectbox("월", list(range(1, 13)), index=default_month - 1, key="notice_month_sel")
@@ -705,7 +737,6 @@ elif st.session_state.page == "admin":
                                 t_tag, t_desc = result.split("|", 1)
                             except Exception:
                                 t_tag, t_desc = "#요즘대세", result
-                            # 제품명으로 네이버 이미지도 같이 가져와서 큐레이션에 포함
                             img_url = fetch_snack_image(hot_name)
                             st.session_state.hot_trends.append({"name": hot_name, "tag": t_tag.strip(), "desc": t_desc.strip(), "image": img_url})
                             st.toast("트렌드 큐레이션이 홈에 추가되었습니다.")
@@ -756,7 +787,6 @@ elif st.session_state.page == "admin":
             for s in st.session_state.snacks:
                 col_m1, col_m2 = st.columns([3, 1])
                 with col_m1:
-                    # 품목 박스끼리 약간의 간격이 생기도록 margin-bottom 복원
                     st.markdown(f"""<div class="req-card" style="margin-bottom:8px;"><div class="info">
                         <h4>{s['name']}</h4>
                         <div class="meta"><img class="icon-inline" src="{svg_thumbs_up}"> {s['likes']}표 · {s['price']:,}원</div>
@@ -778,7 +808,6 @@ elif st.session_state.page == "admin":
         for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True):
             is_tag_only = r["name"].strip().startswith("#")
             if is_tag_only:
-                # 카테고리만으로 만들어진 요청은 입고 대상이 아니라 바로 삭제 가능하게
                 col_t1, col_t2 = st.columns([4, 1])
                 with col_t1:
                     st.markdown(f'<div class="tag-only-req">{r["name"]} - {r["votes"]}명 동의 <span class="hint">(카테고리 전용 요청)</span></div>', unsafe_allow_html=True)
@@ -804,7 +833,7 @@ elif st.session_state.page == "admin":
         if st.button("추천 조합 시뮬레이션 시작", use_container_width=True, type="primary"):
             cats = st.session_state.cat_votes
             top_reqs = [r["name"] for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)[:5]]
-            with st.spinner("AI가 조합을 추천하고, 실제 상품을 검색해 가격/링크를 확인하는 중입니다..."):
+            with st.spinner("AI가 후보를 추천하고, 실제 가격으로 9만원에 맞춰 채우는 중입니다..."):
                 err, combos = build_cart_combos(cats, top_reqs)
             if err:
                 st.session_state.ai_result = err
@@ -823,15 +852,11 @@ elif st.session_state.page == "admin":
             for idx, combo in enumerate(st.session_state.ai_combos, start=1):
                 rows = ""
                 for it in combo["items"]:
-                    line_price = f'{it["price"] * it["qty"]:,}원' if it["price"] else "가격 확인 필요"
-                    if it["link"]:
-                        name_html = f'<a href="{it["link"]}" target="_blank">{it["name"]} ×{it["qty"]}</a>'
-                    else:
-                        name_html = f'{it["name"]} ×{it["qty"]} <span style="color:#bbb;">(검색결과 없음)</span>'
+                    line_price = f'{it["price"] * it["qty"]:,}원'
+                    name_html = f'<a href="{it["link"]}" target="_blank">{it["name"]} ×{it["qty"]}</a>'
                     rows += f'<div class="combo-row"><span>{name_html}</span><span>{line_price}</span></div>'
-                total_display = f'{combo["total"]:,}원' if combo["total"] else "합계 확인 필요"
                 st.markdown(f"""<div class="ai-result">
-                    <div class="combo-title">조합 {idx} · 총 {total_display}</div>
+                    <div class="combo-title">조합 {idx} · 총 {combo["total"]:,}원</div>
                     {rows}
                     <div class="combo-reason">{combo['reason']}</div>
                 </div>""", unsafe_allow_html=True)
