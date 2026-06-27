@@ -246,27 +246,27 @@ div[data-testid="stHorizontalBlock"] > div {{
 
 /* '좋아요'(snack-card) / '나도'(req-card) / '선택'(검색결과) 버튼 — 폰트/모서리 통일 */
 [class*="st-key-like_"][class*="st-key-like_"] button {{
-    font-size: 12.5px !important;
+    font-size: 12px !important;
     padding: 3px 14px !important;
     min-height: 26px !important;
     height: 26px !important;
-    border-radius: 6px !important;
+    border-radius: 7px !important;
     width: auto !important;
 }}
 [class*="st-key-like_"][class*="st-key-like_"] {{ display: flex; justify-content: center; }}
 [class*="st-key-vote_"][class*="st-key-vote_"] button {{
     padding: 2px 12px !important;
-    font-size: 12.5px !important;
+    font-size: 12px !important;
     min-height: 24px !important;
     height: 24px !important;
-    border-radius: 6px !important;
+    border-radius: 7px !important;
     width: auto !important;
     margin-top: 5px !important;
 }}
 [class*="st-key-vote_"][class*="st-key-vote_"] {{ display: flex; justify-content: center; }}
 [class*="st-key-nv_"][class*="st-key-nv_"] button {{
-    font-size: 12.5px !important;
-    border-radius: 6px !important;
+    font-size: 12px !important;
+    border-radius: 7px !important;
 }}
 
 /* ── 카테고리 태그 (뱃지) ── */
