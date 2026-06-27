@@ -540,12 +540,28 @@ def save_persistent_key(key, value):
     except Exception:
         return False
 
+# 구글 시트는 한 칸에 최대 50,000자까지만 들어가요(돈 문제가 아니라 구조적 한계).
+# requests/hot_trends는 계속 쌓이기만 할 수 있는 목록이라, 저장할 때마다
+# 너무 길어졌으면 자동으로 정리해서 사람이 따로 신경쓰지 않아도 되게 함.
+MAX_LIST_ENTRIES = {"requests": 200, "hot_trends": 100}
+
 def persist(key):
     """st.session_state[key]의 현재 값을 구글 시트에 저장. set은 JSON이
     안 되니 리스트로 바꿔서 저장한다."""
     value = st.session_state[key]
     if isinstance(value, set):
         value = list(value)
+
+    if key in MAX_LIST_ENTRIES and isinstance(value, list) and len(value) > MAX_LIST_ENTRIES[key]:
+        cap = MAX_LIST_ENTRIES[key]
+        if key == "requests":
+            # 투표 안 되고 방치된 오래된 요청보다는 득표 높은 것 위주로 남김
+            value = sorted(value, key=lambda x: x.get("votes", 0), reverse=True)[:cap]
+        else:
+            # 최신 큐레이션 위주로 남김
+            value = value[-cap:]
+        st.session_state[key] = value  # 화면에 보이는 목록도 같이 정리
+
     ok = save_persistent_key(key, value)
     if not ok:
         st.toast("⚠️ 구글 시트 저장 실패 — 이번 변경사항이 영구 저장되지 않았어요.", icon="⚠️")
