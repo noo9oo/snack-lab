@@ -172,7 +172,7 @@ div[data-testid="stHorizontalBlock"] > div {{
     .logo-bottom-text {{ font-size: 9px; letter-spacing: 1.5px; }}
 }}
 
-.logo-bottom-text {{ font-size: 11px; font-weight: 350 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
+.logo-bottom-text {{ font-size: 11px; font-weight: 300 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
 
 /* 플로팅 에셋 SVG */
 .float-asset {{ position: absolute; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }}
@@ -244,13 +244,13 @@ div[data-testid="stHorizontalBlock"] > div {{
     flex-wrap: wrap; gap: 3px;
 }}
 
-/* '좋아요' 버튼(snack-card) / '나도' 버튼(req-card) — 모서리 더 둥글게, 폰트는 다과 이름 크기와 동일하게 */
+/* '좋아요'(snack-card) / '나도'(req-card) / '선택'(검색결과) 버튼 — 폰트/모서리 통일 */
 [class*="st-key-like_"] button {{
-    font-size: 13px !important;
+    font-size: 12.5px !important;
     padding: 3px 14px !important;
     min-height: 26px !important;
     height: 26px !important;
-    border-radius: 20px !important;
+    border-radius: 6px !important;
     width: auto !important;
 }}
 [class*="st-key-like_"] {{ display: flex; justify-content: center; }}
@@ -259,11 +259,15 @@ div[data-testid="stHorizontalBlock"] > div {{
     font-size: 12.5px !important;
     min-height: 24px !important;
     height: 24px !important;
-    border-radius: 20px !important;
+    border-radius: 6px !important;
     width: auto !important;
     margin-top: 5px !important;
 }}
 [class*="st-key-vote_"] {{ display: flex; justify-content: center; }}
+[class*="st-key-nv_"] button {{
+    font-size: 12.5px !important;
+    border-radius: 6px !important;
+}}
 
 /* ── 카테고리 태그 (뱃지) ── */
 .tag-container {{ display: flex; flex-wrap: nowrap; justify-content: center; gap: 3px; margin-bottom: 6px; overflow: hidden; }}
@@ -326,6 +330,13 @@ div[data-testid="stPills"] button[aria-checked="true"] {{
 .form-tag-label {{
     font-size: 15px; color: #8D6E63; margin: 10px 0 5px; font-weight: 400 !important;
 }}
+
+/* 검색하기 / 카테고리로 요청하기 사이 OR 구분선 */
+.or-divider {{
+    display: flex; align-items: center; gap: 10px;
+    margin: 16px 0 6px; color: #999; font-size: 11px;
+}}
+.or-divider span {{ flex: 1; height: 1px; background: rgba(0,0,0,0.12); }}
 
 /* 텍스트 입력창에 아주 옅은 회색 테두리 — 입력 가능한 칸이라는 걸 알 수 있게 */
 div[data-baseweb="input"], div[data-baseweb="base-input"] {{
@@ -662,6 +673,12 @@ def init_state():
     if "user_votes" not in st.session_state: st.session_state.user_votes = set()
     if "selected_cats" not in st.session_state: st.session_state.selected_cats = [] 
     if "cat_pills" not in st.session_state: st.session_state.cat_pills = []
+    # cat_pills는 위젯 키라서, 위젯이 이미 그려진 뒤(버튼 클릭 핸들러 등)에는
+    # 직접 값을 바꿀 수 없다. 그래서 리셋 요청은 플래그로만 남겨두고,
+    # 위젯이 그려지기 전인 여기(다음 run의 맨 앞)에서 실제로 비운다.
+    if st.session_state.get("_reset_cat_pills", False):
+        st.session_state.cat_pills = []
+        st.session_state._reset_cat_pills = False
     
     if "notice_date" not in st.session_state:
         st.session_state.notice_date = persisted.get("notice_date", "7월 1일")
@@ -800,17 +817,6 @@ if st.session_state.page == "main":
                 if err: st.error(err)
                 elif results: st.session_state.naver_results = results
 
-    st.markdown('<div class="form-tag-label"># 카테고리 태그 지정 (중복 선택 가능)</div>', unsafe_allow_html=True)
-    pills_selection = st.pills(
-        "카테고리 선택",
-        CATEGORIES,
-        selection_mode="multi",
-        format_func=lambda c: f"#{c}",
-        label_visibility="collapsed",
-        key="cat_pills",
-    )
-    st.session_state.selected_cats = list(pills_selection) if pills_selection else []
-
     if st.session_state.get("naver_results"):
         st.caption("선택하면 바로 신규 간식 요청에 등록됩니다.")
         for ci, item in enumerate(st.session_state.naver_results):
@@ -831,11 +837,24 @@ if st.session_state.page == "main":
                     persist("requests")
                     st.session_state.selected_naver = None
                     st.session_state.selected_cats = []
-                    st.session_state.cat_pills = []
+                    st.session_state._reset_cat_pills = True
                     st.session_state.search_input_val = ""
                     st.session_state.naver_results = []
                     st.toast(f"'{item['name']}' 요청이 등록되었습니다.")
                     st.rerun()
+
+    st.markdown('<div class="or-divider"><span></span>OR<span></span></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="form-tag-label"># 카테고리로 요청하기 (중복 선택 가능)</div>', unsafe_allow_html=True)
+    pills_selection = st.pills(
+        "카테고리 선택",
+        CATEGORIES,
+        selection_mode="multi",
+        format_func=lambda c: f"#{c}",
+        label_visibility="collapsed",
+        key="cat_pills",
+    )
+    st.session_state.selected_cats = list(pills_selection) if pills_selection else []
 
     st.write("") 
     col_btn1, col_btn2, col_btn3 = st.columns([1.5, 2, 1.5])
@@ -856,7 +875,7 @@ if st.session_state.page == "main":
                 persist("requests")
                 st.session_state.selected_naver = None
                 st.session_state.selected_cats = []
-                st.session_state.cat_pills = []
+                st.session_state._reset_cat_pills = True
                 st.session_state.search_input_val = ""
                 st.session_state.naver_results = []
                 st.rerun()
