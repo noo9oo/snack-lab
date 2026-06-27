@@ -116,22 +116,22 @@ div[data-testid="stHorizontalBlock"] > div {{
 }}
 
 /* ── 네비게이션 탭 ── */
-[class*="st-key-btn_nav_"] {{ overflow: visible !important; min-width: 0 !important; }}
-[class*="st-key-btn_nav_"] button {{
+[class*="st-key-btn_nav_"][class*="st-key-btn_nav_"] {{ overflow: visible !important; min-width: 0 !important; }}
+[class*="st-key-btn_nav_"][class*="st-key-btn_nav_"] button {{
     font-size: 9px !important; padding: 1px 5px !important;
     min-height: 22px !important; height: 22px !important; line-height: 22px !important;
     background: transparent !important; border: none !important; outline: none !important;
     box-shadow: none !important; color: #475569 !important; border-radius: 0 !important;
     white-space: nowrap !important; width: auto !important; min-width: 0 !important;
 }}
-[class*="st-key-btn_nav_"] button:hover {{ text-decoration: underline !important; }}
-[class*="st-key-btn_nav_"] button:focus {{ outline: none !important; box-shadow: none !important; border: none !important; }}
-[class*="st-key-btn_nav_"] button:active {{ transform: none !important; }}
+[class*="st-key-btn_nav_"][class*="st-key-btn_nav_"] button:hover {{ text-decoration: underline !important; }}
+[class*="st-key-btn_nav_"][class*="st-key-btn_nav_"] button:focus {{ outline: none !important; box-shadow: none !important; border: none !important; }}
+[class*="st-key-btn_nav_"][class*="st-key-btn_nav_"] button:active {{ transform: none !important; }}
 @media (max-width: 380px) {{
-    [class*="st-key-btn_nav_"] button {{ font-size: 7.5px !important; padding: 1px 3px !important; }}
+    [class*="st-key-btn_nav_"][class*="st-key-btn_nav_"] button {{ font-size: 7.5px !important; padding: 1px 3px !important; }}
 }}
 /* HOME/MANAGEMENT 두 버튼 사이 간격 좁힘 (가운데 정렬은 바깥 columns 비율로 처리) */
-[class*="st-key-nav_row"] div[data-testid="stHorizontalBlock"] {{
+[class*="st-key-nav_row"][class*="st-key-nav_row"] div[data-testid="stHorizontalBlock"] {{
     gap: 4px !important;
     justify-content: center !important;
 }}
@@ -172,7 +172,7 @@ div[data-testid="stHorizontalBlock"] > div {{
     .logo-bottom-text {{ font-size: 9px; letter-spacing: 1.5px; }}
 }}
 
-.logo-bottom-text {{ font-size: 10px; font-weight: 300 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
+.logo-bottom-text {{ font-size: 11px; font-weight: 300 !important; color: #8D6E63; margin-top: 4px; letter-spacing: 2.5px; margin-bottom: 0; }}
 
 /* 플로팅 에셋 SVG */
 .float-asset {{ position: absolute; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }}
@@ -225,8 +225,8 @@ div[data-testid="stHorizontalBlock"] > div {{
 .req-card .info .meta {{ font-size: 11px; color: #8D6E63; display: flex; align-items: center; gap:4px; flex-wrap: wrap; }}
 
 /* 비치 명단 '고정' 체크박스: 줄바꿈 없이 한 줄로 */
-[class*="st-key-pin_chk_"] label {{ white-space: nowrap !important; }}
-[class*="st-key-pin_chk_"] label p {{ font-size: 12px !important; white-space: nowrap !important; }}
+[class*="st-key-pin_chk_"][class*="st-key-pin_chk_"] label {{ white-space: nowrap !important; }}
+[class*="st-key-pin_chk_"][class*="st-key-pin_chk_"] label p {{ font-size: 12px !important; white-space: nowrap !important; }}
 
 /* 신규 간식 요청 2열 그리드 카드 */
 .req-card-grid {{
@@ -245,16 +245,16 @@ div[data-testid="stHorizontalBlock"] > div {{
 }}
 
 /* '좋아요'(snack-card) / '나도'(req-card) / '선택'(검색결과) 버튼 — 폰트/모서리 통일 */
-[class*="st-key-like_"] button {{
-    font-size: 11px !important;
+[class*="st-key-like_"][class*="st-key-like_"] button {{
+    font-size: 12.5px !important;
     padding: 3px 14px !important;
     min-height: 26px !important;
     height: 26px !important;
-    border-radius: 7px !important;
+    border-radius: 6px !important;
     width: auto !important;
 }}
-[class*="st-key-like_"] {{ display: flex; justify-content: center; }}
-[class*="st-key-vote_"] button {{
+[class*="st-key-like_"][class*="st-key-like_"] {{ display: flex; justify-content: center; }}
+[class*="st-key-vote_"][class*="st-key-vote_"] button {{
     padding: 2px 12px !important;
     font-size: 12.5px !important;
     min-height: 24px !important;
@@ -263,8 +263,8 @@ div[data-testid="stHorizontalBlock"] > div {{
     width: auto !important;
     margin-top: 5px !important;
 }}
-[class*="st-key-vote_"] {{ display: flex; justify-content: center; }}
-[class*="st-key-nv_"] button {{
+[class*="st-key-vote_"][class*="st-key-vote_"] {{ display: flex; justify-content: center; }}
+[class*="st-key-nv_"][class*="st-key-nv_"] button {{
     font-size: 12.5px !important;
     border-radius: 6px !important;
 }}
@@ -358,27 +358,27 @@ div[data-baseweb="input"], div[data-baseweb="base-input"] {{
 .hot-trend-box .hot-desc {{ font-size: 12.5px; color: #555; margin-top: 4px; }}
 
 /* ── 월/일 선택 select box: 가로 폭 대폭 축소 (전역 row 고정과 함께 한 줄에 들어오게) ── */
-[class*="st-key-notice_month_sel"], [class*="st-key-notice_day_sel"] {{
+[class*="st-key-notice_month_sel"][class*="st-key-notice_month_sel"], [class*="st-key-notice_day_sel"][class*="st-key-notice_day_sel"] {{
     font-size: 13px;
     max-width: 78px;
 }}
-[class*="st-key-notice_month_sel"] div[data-baseweb="select"],
-[class*="st-key-notice_day_sel"] div[data-baseweb="select"] {{
+[class*="st-key-notice_month_sel"][class*="st-key-notice_month_sel"] div[data-baseweb="select"],
+[class*="st-key-notice_day_sel"][class*="st-key-notice_day_sel"] div[data-baseweb="select"] {{
     min-width: 0 !important;
 }}
 
 /* 신규 요청 항목 심사: 카테고리 전용 요청 줄 + 일반 제품명 체크박스 줄 폰트를 13px로 통일 */
 .tag-only-req {{ font-size: 13px; color: #4E342E; padding: 6px 0; overflow-wrap: break-word; word-break: break-word; }}
 .tag-only-req .hint {{ color: #999; font-size: 10.5px; margin-left: 4px; }}
-[class*="st-key-del_req_"] button {{
+[class*="st-key-del_req_"][class*="st-key-del_req_"] button {{
     font-size: 10px !important;
     padding: 2px 8px !important;
     min-height: 22px !important;
     height: 22px !important;
     width: auto !important;
 }}
-[class*="st-key-del_req_"] {{ display: flex; justify-content: flex-end; }}
-[class*="st-key-add_"] p {{ font-size: 13px !important; color: #4E342E !important; }}
+[class*="st-key-del_req_"][class*="st-key-del_req_"] {{ display: flex; justify-content: flex-end; }}
+[class*="st-key-add_"][class*="st-key-add_"] p {{ font-size: 13px !important; color: #4E342E !important; }}
 
 .icon-inline {{ width: 14px; height: 14px; vertical-align: middle; }}
 </style>
@@ -732,7 +732,7 @@ if st.session_state.page == "main":
     if st.session_state.hot_trends:
         st.markdown(f'<div class="sec-title"><img src="{svg_heart}"> HOT 다과 트렌드 큐레이션</div>', unsafe_allow_html=True)
         for ht in st.session_state.hot_trends:
-            img_html = f'<img class="hot-img" src="{ht["image"]}">' if ht.get("image") else ""
+            img_html = f'<img class="hot-img" src="{ht["image"]}" onerror="this.style.display=\'none\'">' if ht.get("image") else ""
             st.markdown(f"""
             <div class="hot-trend-box">
                 {img_html}
@@ -783,10 +783,14 @@ if st.session_state.page == "main":
     req_cols = st.columns(2)
     for i, r in enumerate(sorted_reqs):
         with req_cols[i % 2]:
-            tag_html = "".join([f'<span class="tag" style="margin-right:3px;">#{c}</span>' for c in r["categories"]])
+            # 이름이 '#'로 시작하는 카테고리 전용 요청은 이름 자체가 이미 태그라서,
+            # 그 밑에 같은 내용의 작은 태그 배지를 또 보여줄 필요가 없음
+            is_tag_only_req = r["name"].strip().startswith("#")
+            tag_html = "" if is_tag_only_req else "".join([f'<span class="tag" style="margin-right:3px;">#{c}</span>' for c in r["categories"]])
+            sep = "" if is_tag_only_req else f"{tag_html} · "
             st.markdown(f"""<div class="req-card-grid">
                 <h4>{r['name']}</h4>
-                <div class="meta">{tag_html} · <img class="icon-inline" src="{svg_thumbs_up}"> {r['votes']}명 요청</div>
+                <div class="meta">{sep}<img class="icon-inline" src="{svg_thumbs_up}"> {r['votes']}명 요청</div>
             </div>""", unsafe_allow_html=True)
             has_voted = r["id"] in st.session_state.user_votes
             if st.button("취소" if has_voted else "나도", key=f"vote_{r['id']}"):
@@ -927,7 +931,7 @@ elif st.session_state.page == "admin":
                 st.warning("다과 이름을 입력해 주세요.")
             elif gemini_cooldown_ok("hot_preview"):
                 with st.spinner("AI 멘트 작성 및 이미지 검색 중..."):
-                    prompt = f"회사 탕비실 다과 '{hot_name}'을/를 직원들에게 추천하는 해시태그 1개와 짧은 홍보 문구(25자 이내)를 작성해줘. 형식은 반드시 '태그|문구' 기호로 구분지어 대답해."
+                    prompt = f"다과 '{hot_name}'에 대한 해시태그 1개와, 이 제품을 짧게 소개하는 문구(25자 이내)를 작성해줘. 광고나 추천 멘트가 아니라 제품 특징을 간단히 설명하는 느낌으로 써줘. '탕비실'이라는 단어는 쓰지 마. 형식은 반드시 '태그|문구' 기호로 구분지어 대답해."
                     result = call_gemini(prompt, mode="trend")
                     if is_error_text(result):
                         st.error(result)
@@ -945,7 +949,7 @@ elif st.session_state.page == "admin":
             p = st.session_state.hot_preview
             st.caption("아래는 홈 화면에 실제로 표시될 미리보기입니다. 확인 후 추가해 주세요.")
             if p.get("image"):
-                img_html = f'<img class="hot-img" src="{p["image"]}">'
+                img_html = f'<img class="hot-img" src="{p["image"]}" onerror="this.style.display=\'none\'">'
             else:
                 img_html = '<div class="hot-img" style="display:flex;align-items:center;justify-content:center;color:#bbb;font-size:9px;">이미지 없음</div>'
             st.markdown(f"""
