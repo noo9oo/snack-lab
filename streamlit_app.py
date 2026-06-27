@@ -555,11 +555,13 @@ if st.session_state.page == "main":
                     <img class="snack-img" src="{s['image']}" onerror="this.src='https://placehold.co/120x120/FFF9C4/FBC02D?text=Snack'">
                     <div class="name">{pin_icon} {s['name']}</div>
                     <div class="price">{s['price']:,}원</div>
+                    <div class="price"><img class="icon-inline" src="{svg_thumbs_up}"> {s['likes']}명이 좋아요</div>
                     {tag_html}
                 </div>""", unsafe_allow_html=True)
                 
                 has_liked = s["id"] in st.session_state.user_likes
-                if st.button(f"좋아요 취소 ({s['likes']})" if has_liked else f"좋아요 ({s['likes']})", key=f"like_{s['id']}", use_container_width=True):
+                # '나도' 버튼처럼 카운트는 카드 쪽에 따로 표시하고, 버튼 라벨은 단순하게
+                if st.button("좋아요 취소" if has_liked else "좋아요", key=f"like_{s['id']}", use_container_width=True):
                     if has_liked:
                         s["likes"] -= 1
                         st.session_state.user_likes.remove(s["id"])
@@ -749,14 +751,24 @@ elif st.session_state.page == "admin":
 
         st.markdown(f'<div class="field-hint"><img src="{svg_search}"> 다과 직접 검색 후 추가</div>', unsafe_allow_html=True)
         admin_search_name = st.text_input("다과/음료명 검색", key="admin_search_input", placeholder="예: 포카칩 어니언", label_visibility="collapsed")
+
+        # 검색창을 비우면 즉시 이전 검색 결과를 초기화 (이 입력란은 폼이 아니라서 매 입력마다 rerun됨)
+        if not admin_search_name:
+            st.session_state.admin_naver_results = []
+
         if st.button("🔍 검색하기", key="admin_search_btn", use_container_width=True):
+            st.session_state.admin_naver_results = []  # 이전 결과를 먼저 비워서, 검색이 실패해도 다음 재검색이 깔끔하게 되도록
             if not admin_search_name:
                 st.warning("검색할 제품명을 입력해 주세요.")
             else:
                 with st.spinner("상품 데이터를 검색 중입니다..."):
                     results, err = search_naver_shopping(admin_search_name)
-                    if err: st.error(err)
-                    elif results: st.session_state.admin_naver_results = results
+                    if err:
+                        st.error(err)
+                    elif results:
+                        st.session_state.admin_naver_results = results
+                    else:
+                        st.info("검색 결과가 없습니다. 다른 검색어로 다시 시도해 보세요.")
 
         if st.session_state.get("admin_naver_results"):
             for ci, item in enumerate(st.session_state.admin_naver_results):
