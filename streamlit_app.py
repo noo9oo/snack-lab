@@ -246,7 +246,7 @@ div[data-testid="stHorizontalBlock"] > div {{
 
 /* '좋아요'(snack-card) / '나도'(req-card) / '선택'(검색결과) 버튼 — 폰트/모서리 통일 */
 [class*="st-key-like_"][class*="st-key-like_"] button {{
-    font-size: 10px !important;
+    font-size: 9px !important;
     padding: 3px 14px !important;
     min-height: 26px !important;
     height: 26px !important;
@@ -256,7 +256,7 @@ div[data-testid="stHorizontalBlock"] > div {{
 [class*="st-key-like_"][class*="st-key-like_"] {{ display: flex; justify-content: center; }}
 [class*="st-key-vote_"][class*="st-key-vote_"] button {{
     padding: 2px 12px !important;
-    font-size: 10px !important;
+    font-size: 9px !important;
     min-height: 24px !important;
     height: 24px !important;
     border-radius: 10px !important;
@@ -265,7 +265,7 @@ div[data-testid="stHorizontalBlock"] > div {{
 }}
 [class*="st-key-vote_"][class*="st-key-vote_"] {{ display: flex; justify-content: center; }}
 [class*="st-key-nv_"][class*="st-key-nv_"] button {{
-    font-size: 10px !important;
+    font-size: 9px !important;
     border-radius: 10px !important;
 }}
 
