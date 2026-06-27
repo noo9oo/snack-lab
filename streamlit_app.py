@@ -130,6 +130,11 @@ div[data-testid="stHorizontalBlock"] > div {{
 @media (max-width: 380px) {{
     [class*="st-key-btn_nav_"] button {{ font-size: 7.5px !important; padding: 1px 3px !important; }}
 }}
+/* HOME/MANAGEMENT 두 버튼 사이 간격 좁힘 (가운데 정렬은 바깥 columns 비율로 처리) */
+[class*="st-key-nav_row"] div[data-testid="stHorizontalBlock"] {{
+    gap: 4px !important;
+    justify-content: center !important;
+}}
 
 /* ── 메인 로고: 글자별 스큐어모피즘 + 플로팅 ── */
 .logo-banner {{
@@ -458,6 +463,21 @@ def call_gemini(prompt_text, mode="cart"):
 def is_error_text(text):
     return text.startswith("API 오류") or text.startswith("⚠️")
 
+# 제미나이 무료 티어는 분당 요청 수 한도가 낮아서, 짧은 시간 안에 연달아
+# 누르면 바로 429가 뜬다. 같은 버튼을 너무 빠르게 다시 누르는 것만이라도
+# 막아서, 적어도 클릭 한 번이 호출 한 번으로 이어지게 한다.
+GEMINI_COOLDOWN_SEC = 15
+
+def gemini_cooldown_ok(label):
+    now = time.time()
+    last = st.session_state.get(f"_last_gemini_{label}", 0)
+    if now - last < GEMINI_COOLDOWN_SEC:
+        remaining = int(GEMINI_COOLDOWN_SEC - (now - last)) + 1
+        st.warning(f"너무 빠르게 다시 요청하면 API 한도에 걸려요. {remaining}초 후 다시 시도해 주세요.")
+        return False
+    st.session_state[f"_last_gemini_{label}"] = now
+    return True
+
 # ─────────────────────────────────────────────
 # Google Sheets 영구 저장소
 # st.session_state는 그 브라우저 탭이 서버와 맺은 연결에서만 사는 임시 메모리라
@@ -641,17 +661,18 @@ init_state()
 # 레이아웃 렌더링 파트
 # ═════════════════════════════════════════════
 
-col_nav, col_empty = st.columns([3, 2])
+col_l, col_nav, col_r = st.columns([1, 1.4, 1])
 with col_nav:
-    nav_cols = st.columns(2)
-    with nav_cols[0]:
-        if st.button("HOME", key="btn_nav_home", use_container_width=True):
-            st.session_state.page = "main"
-            st.rerun()
-    with nav_cols[1]:
-        if st.button("MANAGEMENT", key="btn_nav_admin", use_container_width=True):
-            st.session_state.page = "admin"
-            st.rerun()
+    with st.container(key="nav_row"):
+        nav_cols = st.columns(2)
+        with nav_cols[0]:
+            if st.button("HOME", key="btn_nav_home", use_container_width=True):
+                st.session_state.page = "main"
+                st.rerun()
+        with nav_cols[1]:
+            if st.button("MANAGEMENT", key="btn_nav_admin", use_container_width=True):
+                st.session_state.page = "admin"
+                st.rerun()
 
 if st.session_state.page == "main":
 
@@ -869,7 +890,7 @@ elif st.session_state.page == "admin":
         if st.button("미리보기 생성", use_container_width=True):
             if not hot_name:
                 st.warning("다과 이름을 입력해 주세요.")
-            else:
+            elif gemini_cooldown_ok("hot_preview"):
                 with st.spinner("AI 멘트 작성 및 이미지 검색 중..."):
                     prompt = f"회사 탕비실 다과 '{hot_name}'을/를 직원들에게 추천하는 해시태그 1개와 짧은 홍보 문구(25자 이내)를 작성해줘. 형식은 반드시 '태그|문구' 기호로 구분지어 대답해."
                     result = call_gemini(prompt, mode="trend")
@@ -1028,16 +1049,17 @@ elif st.session_state.page == "admin":
         st.markdown(f'<div class="sec-title"><img src="{svg_cup_soda}"> AI 10만원 최적 장바구니 자동 빌더</div>', unsafe_allow_html=True)
 
         if st.button("추천 조합 시뮬레이션 시작", use_container_width=True, type="primary"):
-            cats = st.session_state.cat_votes
-            top_reqs = [r["name"] for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)[:5]]
-            with st.spinner("AI가 후보를 추천하고, 실제 가격으로 9만원에 맞춰 채우는 중입니다..."):
-                err, combos = build_cart_combos(cats, top_reqs)
-            if err:
-                st.session_state.ai_result = err
-                st.session_state.ai_combos = None
-            else:
-                st.session_state.ai_combos = combos
-                st.session_state.ai_result = ""
+            if gemini_cooldown_ok("cart_combo"):
+                cats = st.session_state.cat_votes
+                top_reqs = [r["name"] for r in sorted(st.session_state.requests, key=lambda x: x["votes"], reverse=True)[:5]]
+                with st.spinner("AI가 후보를 추천하고, 실제 가격으로 9만원에 맞춰 채우는 중입니다..."):
+                    err, combos = build_cart_combos(cats, top_reqs)
+                if err:
+                    st.session_state.ai_result = err
+                    st.session_state.ai_combos = None
+                else:
+                    st.session_state.ai_combos = combos
+                    st.session_state.ai_result = ""
 
         if st.session_state.ai_result:
             if is_error_text(st.session_state.ai_result):
