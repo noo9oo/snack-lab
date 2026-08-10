@@ -531,7 +531,6 @@ if st.session_state.page == "main":
                 st.markdown(f"""<div class="snack-card">
                     <img class="snack-img" src="{s['image']}" onerror="this.src='https://placehold.co/120x120/FFF9C4/FBC02D?text=Snack'">
                     <div class="name">{pin_icon} {s['name']}</div>
-                    <div class="price">{s['price']:,}원</div>
                     <div class="price"><img class="icon-inline" src="{svg_thumbs_up}"> {s['likes']}명이 좋아요</div>
                     {tag_html}
                 </div>""", unsafe_allow_html=True)
@@ -766,7 +765,7 @@ elif st.session_state.page == "admin":
                 with col_m1:
                     st.markdown(f"""<div class="req-card" style="margin-bottom:8px;"><div class="info">
                         <h4>{s['name']}</h4>
-                        <div class="meta"><img class="icon-inline" src="{svg_thumbs_up}"> {s['likes']}표 · {s['price']:,}원</div>
+                        <div class="meta"><img class="icon-inline" src="{svg_thumbs_up}"> {s['likes']}표</div>
                     </div></div>""", unsafe_allow_html=True)
                 with col_m2:
                     is_pinned = s["id"] in st.session_state.pinned_snacks
