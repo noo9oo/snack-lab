@@ -816,3 +816,34 @@ elif st.session_state.page == "admin":
             if st.button("세션 로그아웃", use_container_width=True):
                 st.session_state.admin_auth = False
                 st.rerun()
+
+        # ── 진단 패널 ──
+        st.markdown("---")
+        with st.expander("🔧 연동 진단 (개발자용)"):
+            # Google Sheets 진단
+            st.markdown("**Google Sheets**")
+            sheet = _get_gsheet()
+            if sheet is None:
+                err = st.session_state.get("_gsheet_error", "알 수 없는 오류")
+                st.error(f"연결 실패: {err}")
+            else:
+                try:
+                    rows = sheet.get_all_records()
+                    st.success(f"연결 성공 — 저장된 키 {len(rows)}개")
+                    for r in rows:
+                        st.code(f"{r.get('key')} : {str(r.get('value',''))[:80]}")
+                except Exception as e:
+                    st.error(f"데이터 읽기 실패: {e}")
+
+            st.markdown("**Google Search API**")
+            api_key = st.secrets.get("GOOGLE_SEARCH_API_KEY", "")
+            cx = st.secrets.get("GOOGLE_SEARCH_CX", "")
+            st.write(f"API Key: `{'설정됨 (' + api_key[:8] + '...)' if api_key else '없음'}`")
+            st.write(f"CX: `{'설정됨 (' + cx[:8] + '...)' if cx else '없음'}`")
+            if st.button("검색 API 테스트 (포카칩)"):
+                results, err = search_naver_shopping("포카칩")
+                if err:
+                    st.error(err)
+                else:
+                    st.success(f"성공! 결과 {len(results)}개")
+                    st.write(results[0] if results else "결과 없음")
