@@ -357,7 +357,6 @@ def _get_gsheet():
         gc = gspread.authorize(creds)
         return gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
     except Exception as e:
-        st.session_state["_gsheet_error"] = str(e)
         return None
 
 def load_persistent_state():
@@ -822,10 +821,18 @@ elif st.session_state.page == "admin":
         with st.expander("🔧 연동 진단 (개발자용)"):
             # Google Sheets 진단
             st.markdown("**Google Sheets**")
-            sheet = _get_gsheet()
-            if sheet is None:
-                err = st.session_state.get("_gsheet_error", "알 수 없는 오류")
-                st.error(f"연결 실패: {err}")
+            try:
+                creds_dict = dict(st.secrets["gcp_service_account"])
+                from google.oauth2.service_account import Credentials as _Creds
+                import gspread as _gs
+                _creds = _Creds.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+                _gc = _gs.authorize(_creds)
+                sheet = _gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
+            except Exception as _e:
+                sheet = None
+                st.error(f"연결 실패: {_e}")
+            if sheet is None and "_e" not in dir():
+                st.error("연결 실패: 알 수 없는 오류")
             else:
                 try:
                     rows = sheet.get_all_records()
