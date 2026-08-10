@@ -360,7 +360,6 @@ def _get_gsheet():
         st.session_state["_gsheet_error"] = str(e)
         return None
 
-@st.cache_data(ttl=10)
 def load_persistent_state():
     sheet = _get_gsheet()
     if sheet is None: return {}
