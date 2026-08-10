@@ -821,11 +821,15 @@ elif st.session_state.page == "admin":
         with st.expander("🔧 연동 진단 (개발자용)"):
             # Google Sheets 진단
             st.markdown("**Google Sheets**")
+            gsheet_id = st.secrets.get("GSHEET_ID", "없음")
+            st.write(f"GSHEET_ID: `{gsheet_id[:20]}...`")
             try:
                 creds_dict = dict(st.secrets["gcp_service_account"])
                 svc_email = creds_dict.get("client_email", "이메일 없음")
-                st.info(f"서비스 계정 이메일: `{svc_email}`")
-                st.caption("👆 이 이메일이 Google Sheet에 편집자로 공유되어 있어야 합니다")
+                svc_project = creds_dict.get("project_id", "알 수 없음")
+                st.info(f"서비스 계정: `{svc_email}`")
+                st.info(f"서비스 계정 프로젝트: `{svc_project}`")
+                st.caption("👆 이 프로젝트에서 Google Sheets API가 활성화되어 있어야 합니다")
                 from google.oauth2.service_account import Credentials as _Creds
                 import gspread as _gs
                 _creds = _Creds.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
