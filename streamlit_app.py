@@ -317,43 +317,38 @@ div[data-baseweb="input"], div[data-baseweb="base-input"] {{
 
 
 # ─────────────────────────────────────────────
-# API 연동
+# API 연동 (Google Custom Search)
 # ─────────────────────────────────────────────
-@st.cache_data(ttl=3600)
-def fetch_snack_image(name):
-    try:
-        client_id = st.secrets.get("NAVER_CLIENT_ID", "")
-        client_secret = st.secrets.get("NAVER_CLIENT_SECRET", "")
-        if not client_id or client_id.startswith("여기에"): return ""
-        url = "https://openapi.naver.com/v1/search/shop.json"
-        headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
-        res = requests.get(url, headers=headers, params={"query": name, "display": 1}, timeout=5)
-        if res.status_code == 200:
-            items = res.json().get("items", [])
-            if items: return items[0].get("image", "")
-    except Exception: pass
-    return ""
-
 def search_naver_shopping(keyword, display=5):
     try:
-        client_id = st.secrets["NAVER_CLIENT_ID"]
-        client_secret = st.secrets["NAVER_CLIENT_SECRET"]
+        api_key = st.secrets["GOOGLE_SEARCH_API_KEY"]
+        cx = st.secrets["GOOGLE_SEARCH_CX"]
     except Exception:
-        return None, "네이버 API 키가 설정되지 않았습니다."
-    url = "https://openapi.naver.com/v1/search/shop.json"
-    headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
-    params = {"query": keyword, "display": display, "sort": "sim"}
+        return None, "Google Search API 키가 secrets에 없습니다."
+
+    url = "https://www.googleapis.com/customsearch/v1"
+    params = {
+        "key": api_key,
+        "cx": cx,
+        "q": keyword + " 구매",
+        "num": display,
+        "searchType": "image",
+        "imgType": "photo",
+        "safe": "active",
+    }
     try:
-        res = requests.get(url, headers=headers, params=params, timeout=10)
+        res = requests.get(url, params=params, timeout=10)
         if res.status_code == 200:
-            data = res.json()
-            results = [{
-                "name": item.get("title", "").replace("<b>", "").replace("</b>", ""),
-                "price": int(item.get("lprice", 0)) if item.get("lprice") else 0,
-                "image": item.get("image", ""),
-                "mall": item.get("mallName", ""),
-                "link": item.get("link", ""),
-            } for item in data.get("items", [])[:display]]
+            items = res.json().get("items", [])
+            results = []
+            for item in items[:display]:
+                results.append({
+                    "name": item.get("title", keyword),
+                    "price": 0,
+                    "image": item.get("link", ""),
+                    "mall": item.get("displayLink", ""),
+                    "link": item.get("image", {}).get("contextLink", ""),
+                })
             return results, None
         return None, f"API 오류 (HTTP {res.status_code}): {res.text[:300]}"
     except Exception as e:
