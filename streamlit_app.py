@@ -860,3 +860,19 @@ elif st.session_state.page == "admin":
                 else:
                     st.success(f"성공! 결과 {len(results)}개")
                     st.write(results[0] if results else "결과 없음")
+
+            st.markdown("**네이버 이미지 검색 테스트**")
+            if st.button("네이버 이미지 검색 테스트 (포카칩)"):
+                try:
+                    cid = st.secrets["NAVER_CLIENT_ID"]
+                    csec = st.secrets["NAVER_CLIENT_SECRET"]
+                    r = requests.get(
+                        "https://openapi.naver.com/v1/search/image",
+                        headers={"X-Naver-Client-Id": cid, "X-Naver-Client-Secret": csec},
+                        params={"query": "포카칩", "display": 3, "filter": "large"},
+                        timeout=8
+                    )
+                    st.write(f"HTTP {r.status_code}")
+                    st.write(r.text[:500])
+                except Exception as e:
+                    st.error(str(e))
