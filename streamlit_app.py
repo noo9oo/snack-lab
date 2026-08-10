@@ -823,6 +823,9 @@ elif st.session_state.page == "admin":
             st.markdown("**Google Sheets**")
             try:
                 creds_dict = dict(st.secrets["gcp_service_account"])
+                svc_email = creds_dict.get("client_email", "이메일 없음")
+                st.info(f"서비스 계정 이메일: `{svc_email}`")
+                st.caption("👆 이 이메일이 Google Sheet에 편집자로 공유되어 있어야 합니다")
                 from google.oauth2.service_account import Credentials as _Creds
                 import gspread as _gs
                 _creds = _Creds.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
