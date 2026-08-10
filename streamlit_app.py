@@ -317,32 +317,24 @@ div[data-baseweb="input"], div[data-baseweb="base-input"] {{
 
 
 # ─────────────────────────────────────────────
-# API 연동 (Google Custom Search)
+# 상품 URL에서 이미지 추출 (API 불필요)
 # ─────────────────────────────────────────────
-def search_naver_shopping(keyword, display=5):
+def extract_product_image(url):
+    """네이버/쿠팡 상품 URL에서 og:image 태그로 이미지 추출"""
     try:
-        api_key = st.secrets["GOOGLE_SEARCH_API_KEY"]
-        cx = st.secrets["GOOGLE_SEARCH_CX"]
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        res = requests.get(url, headers=headers, timeout=8)
+        if res.status_code != 200:
+            return ""
+        html = res.text
+        # og:image 태그 추출
+        import re as _re
+        m = _re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?://[^"\']+)["\']', html)
+        if not m:
+            m = _re.search(r'<meta[^>]+content=["\'](https?://[^"\']+)["\'][^>]+property=["\']og:image["\']', html)
+        return m.group(1) if m else ""
     except Exception:
-        return None, "Google Search API 키가 secrets에 없습니다."
-    url = "https://www.googleapis.com/customsearch/v1"
-    params = {"key": api_key, "cx": cx, "q": keyword, "num": display, "searchType": "image", "imgType": "photo", "safe": "active"}
-    try:
-        res = requests.get(url, params=params, timeout=10)
-        if res.status_code == 200:
-            results = []
-            for item in res.json().get("items", [])[:display]:
-                results.append({
-                    "name": item.get("title", keyword),
-                    "image": item.get("link", ""),
-                    "mall": item.get("displayLink", ""),
-                    "link": item.get("image", {}).get("contextLink", ""),
-                    "price": 0,
-                })
-            return results, None
-        return None, f"API 오류 (HTTP {res.status_code}): {res.text[:300]}"
-    except Exception as e:
-        return None, f"네트워크 오류: {str(e)}"
+        return ""
 
 
 # ─────────────────────────────────────────────
@@ -565,49 +557,63 @@ if st.session_state.page == "main":
     st.markdown("---")
     st.markdown(f'<div class="sec-title"><img src="{svg_cup_soda}"> 새 간식 요청 등록</div>', unsafe_allow_html=True)
 
+    st.caption("💡 네이버쇼핑/쿠팡에서 원하는 상품을 찾아 링크를 붙여넣으면 이미지가 자동으로 불러와집니다.")
+
     with st.form(key="search_form", clear_on_submit=False):
-        req_name = st.text_input("원하는 다과/음료명을 입력하세요", placeholder="예: 코카콜라 제로", key="req_name_input")
-        search_clicked = st.form_submit_button("🔍 검색하기", use_container_width=True)
+        req_name = st.text_input("다과/음료 이름", placeholder="예: 코카콜라 제로", key="req_name_input")
+        req_url  = st.text_input("상품 링크 (선택)", placeholder="https://smartstore.naver.com/...", key="req_url_input")
+        search_clicked = st.form_submit_button("🖼️ 이미지 불러오기 & 미리보기", use_container_width=True)
 
     if search_clicked:
-        st.session_state.naver_results = []
         if not req_name.strip():
-            st.warning("제품명을 입력한 뒤 검색해 주세요.")
+            st.warning("이름을 먼저 입력해 주세요.")
         else:
             st.session_state.search_input_val = req_name.strip()
-            with st.spinner("상품 데이터를 검색 중입니다..."):
-                results, err = search_naver_shopping(req_name.strip())
-                if err:
-                    st.error(err)
-                elif results:
-                    st.session_state.naver_results = results
+            img = ""
+            if req_url.strip().startswith("http"):
+                with st.spinner("상품 이미지를 불러오는 중..."):
+                    img = extract_product_image(req_url.strip())
+            st.session_state.preview_item = {
+                "name": req_name.strip(),
+                "image": img,
+                "link": req_url.strip(),
+            }
 
-    if st.session_state.get("naver_results"):
-        st.caption("선택하면 바로 신규 간식 요청에 등록됩니다.")
-        for ci, item in enumerate(st.session_state.naver_results):
-            col_i1, col_i2 = st.columns([4, 1])
-            with col_i1:
-                img_html = f'<img src="{item["image"]}" width="40" style="border-radius:6px;margin-right:10px;">' if item.get("image") else ""
-                st.markdown(f"""<div class="req-card" style="margin-bottom:4px;">
-                    {img_html}
-                    <div style="font-size:12px;">{item['name'][:30]}</div>
-                </div>""", unsafe_allow_html=True)
-            with col_i2:
-                if st.button("선택", key=f"nv_{ci}"):
-                    existing = next((r for r in st.session_state.requests if r["name"] == item["name"]), None)
-                    cats_now = list(st.session_state.get("selected_cats", []))
-                    if existing:
-                        existing["votes"] += 1
-                    else:
-                        st.session_state.requests.append({"id": int(time.time() * 1000), "name": item["name"], "categories": cats_now, "votes": 1})
-                    persist("requests")
-                    st.session_state.selected_naver = None
-                    st.session_state.selected_cats = []
-                    st.session_state._reset_cat_pills = True
-                    st.session_state.search_input_val = ""
-                    st.session_state.naver_results = []
-                    st.toast(f"'{item['name']}' 요청이 등록되었습니다.")
-                    st.rerun()
+    if st.session_state.get("preview_item"):
+        item = st.session_state.preview_item
+        col_p1, col_p2 = st.columns([1, 3])
+        with col_p1:
+            if item.get("image"):
+                st.image(item["image"], width=80)
+            else:
+                st.markdown("🍪")
+        with col_p2:
+            st.markdown(f"**{item['name']}**")
+            if item.get("link"):
+                st.markdown(f"[상품 링크 보기]({item['link']})")
+            else:
+                st.caption("링크 없음")
+        if st.button("✅ 이 상품으로 요청 등록", use_container_width=True, type="primary"):
+            existing = next((r for r in st.session_state.requests if r["name"] == item["name"]), None)
+            cats_now = list(st.session_state.get("selected_cats", []))
+            if existing:
+                existing["votes"] += 1
+            else:
+                st.session_state.requests.append({
+                    "id": int(time.time() * 1000),
+                    "name": item["name"],
+                    "categories": cats_now,
+                    "image": item.get("image", ""),
+                    "link": item.get("link", ""),
+                    "votes": 1,
+                })
+            persist("requests")
+            st.session_state.preview_item = None
+            st.session_state.selected_cats = []
+            st.session_state._reset_cat_pills = True
+            st.session_state.search_input_val = ""
+            st.toast(f"'{item['name']}' 요청이 등록되었습니다! 🎉")
+            st.rerun()
 
     st.markdown('<div class="or-divider"><span></span>OR<span></span></div>', unsafe_allow_html=True)
 
