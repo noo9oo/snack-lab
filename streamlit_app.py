@@ -355,7 +355,7 @@ def search_naver_shopping(keyword, display=5):
                 "link": item.get("link", ""),
             } for item in data.get("items", [])[:display]]
             return results, None
-        return None, f"API 오류 (HTTP {res.status_code})"
+        return None, f"API 오류 (HTTP {res.status_code}): {res.text[:300]}"
     except Exception as e:
         return None, f"네트워크 오류: {str(e)}"
 
