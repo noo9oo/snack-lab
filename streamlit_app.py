@@ -317,8 +317,28 @@ div[data-baseweb="input"], div[data-baseweb="base-input"] {{
 
 
 # ─────────────────────────────────────────────
-# API 연동 (Google Custom Search)
+# 네이버 이미지 검색 API
 # ─────────────────────────────────────────────
+@st.cache_data(ttl=3600)
+def fetch_snack_image(name):
+    try:
+        client_id = st.secrets.get("NAVER_CLIENT_ID", "")
+        client_secret = st.secrets.get("NAVER_CLIENT_SECRET", "")
+        if not client_id: return ""
+        res = requests.get(
+            "https://openapi.naver.com/v1/search/image",
+            headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
+            params={"query": name, "display": 1, "filter": "large"},
+            timeout=5,
+        )
+        if res.status_code == 200:
+            items = res.json().get("items", [])
+            if items:
+                return items[0].get("thumbnail", items[0].get("link", ""))
+    except Exception:
+        pass
+    return ""
+
 def search_naver_shopping(keyword, display=5):
     try:
         client_id = st.secrets["NAVER_CLIENT_ID"]
@@ -421,7 +441,11 @@ def init_state():
             return default
         return st.session_state[key]
 
-    st.session_state.snacks = _load("snacks", [])
+    snacks = _load("snacks", [])
+    for s in snacks:
+        if not s.get("image"):
+            s["image"] = fetch_snack_image(s["name"])
+    st.session_state.snacks = snacks
     st.session_state.history_likes = _load("history_likes", {})
     st.session_state.pinned_snacks = set(_load("pinned_snacks", []))
     st.session_state.requests = _load("requests", [
@@ -454,8 +478,6 @@ CATEGORIES = ["단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩",
 
 init_state()
 
-if st.session_state.get("_gsheet_error"):
-    st.warning(f"⚠️ Google Sheets 연결 오류: {st.session_state['_gsheet_error']}")
 
 # ═════════════════════════════════════════════
 # 레이아웃
@@ -820,63 +842,3 @@ elif st.session_state.page == "admin":
                 st.session_state.admin_auth = False
                 st.rerun()
 
-        # ── 진단 패널 ──
-        st.markdown("---")
-        with st.expander("🔧 연동 진단 (개발자용)"):
-            # Google Sheets 진단
-            st.markdown("**Google Sheets**")
-            gsheet_id = st.secrets.get("GSHEET_ID", "없음")
-            st.write(f"GSHEET_ID: `{gsheet_id[:20]}...`")
-            try:
-                creds_dict = dict(st.secrets["gcp_service_account"])
-                svc_email = creds_dict.get("client_email", "이메일 없음")
-                svc_project = creds_dict.get("project_id", "알 수 없음")
-                st.info(f"서비스 계정: `{svc_email}`")
-                st.info(f"서비스 계정 프로젝트: `{svc_project}`")
-                st.caption("👆 이 프로젝트에서 Google Sheets API가 활성화되어 있어야 합니다")
-                from google.oauth2.service_account import Credentials as _Creds
-                import gspread as _gs
-                _creds = _Creds.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
-                _gc = _gs.authorize(_creds)
-                sheet = _gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
-                st.success("연결 성공!")
-            except Exception as _e:
-                sheet = None
-                st.error(f"연결 실패 [{type(_e).__name__}]: {repr(_e)}")
-            else:
-                try:
-                    rows = sheet.get_all_records()
-                    st.success(f"연결 성공 — 저장된 키 {len(rows)}개")
-                    for r in rows:
-                        st.code(f"{r.get('key')} : {str(r.get('value',''))[:80]}")
-                except Exception as e:
-                    st.error(f"데이터 읽기 실패: {e}")
-
-            st.markdown("**Google Search API**")
-            api_key = st.secrets.get("GOOGLE_SEARCH_API_KEY", "")
-            cx = st.secrets.get("GOOGLE_SEARCH_CX", "")
-            st.write(f"API Key: `{'설정됨 (' + api_key[:8] + '...)' if api_key else '없음'}`")
-            st.write(f"CX: `{'설정됨 (' + cx[:8] + '...)' if cx else '없음'}`")
-            if st.button("검색 API 테스트 (포카칩)"):
-                results, err = search_naver_shopping("포카칩")
-                if err:
-                    st.error(err)
-                else:
-                    st.success(f"성공! 결과 {len(results)}개")
-                    st.write(results[0] if results else "결과 없음")
-
-            st.markdown("**네이버 이미지 검색 테스트**")
-            if st.button("네이버 이미지 검색 테스트 (포카칩)"):
-                try:
-                    cid = st.secrets["NAVER_CLIENT_ID"]
-                    csec = st.secrets["NAVER_CLIENT_SECRET"]
-                    r = requests.get(
-                        "https://openapi.naver.com/v1/search/image",
-                        headers={"X-Naver-Client-Id": cid, "X-Naver-Client-Secret": csec},
-                        params={"query": "포카칩", "display": 3, "filter": "large"},
-                        timeout=8
-                    )
-                    st.write(f"HTTP {r.status_code}")
-                    st.write(r.text[:500])
-                except Exception as e:
-                    st.error(str(e))
