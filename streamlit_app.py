@@ -372,21 +372,16 @@ def search_naver_shopping(keyword, display=5):
 # ─────────────────────────────────────────────
 # Google Sheets 영구 저장소
 # ─────────────────────────────────────────────
-@st.cache_resource
-def _get_gsheet():
-    try:
-        creds_dict = dict(st.secrets["gcp_service_account"])
-        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-        gc = gspread.authorize(creds)
-        return gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
-    except Exception as e:
-        return None
+def _make_gsheet():
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+    gc = gspread.authorize(creds)
+    return gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
 
 def load_persistent_state():
-    sheet = _get_gsheet()
-    if sheet is None: return {}
     try:
+        sheet = _make_gsheet()
         rows = sheet.get_all_records()
         data = {}
         for row in rows:
@@ -399,14 +394,12 @@ def load_persistent_state():
         return {}
 
 def save_persistent_key(key, value):
-    sheet = _get_gsheet()
-    if sheet is None: return False
     try:
+        sheet = _make_gsheet()
         value_json = json.dumps(value, ensure_ascii=False)
         cell = sheet.find(key, in_column=1)
         if cell: sheet.update_cell(cell.row, 2, value_json)
         else: sheet.append_row([key, value_json])
-        load_persistent_state.clear()
         return True
     except Exception:
         return False
