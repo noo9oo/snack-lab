@@ -828,11 +828,10 @@ elif st.session_state.page == "admin":
                 _creds = _Creds.from_service_account_info(creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"])
                 _gc = _gs.authorize(_creds)
                 sheet = _gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
+                st.success("연결 성공!")
             except Exception as _e:
                 sheet = None
-                st.error(f"연결 실패: {_e}")
-            if sheet is None and "_e" not in dir():
-                st.error("연결 실패: 알 수 없는 오류")
+                st.error(f"연결 실패 [{type(_e).__name__}]: {repr(_e)}")
             else:
                 try:
                     rows = sheet.get_all_records()
