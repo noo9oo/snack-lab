@@ -430,16 +430,14 @@ def persist(key):
 # Session State 초기화
 # ─────────────────────────────────────────────
 def init_state():
-    persisted = load_persistent_state()
-    has_sheets = bool(persisted)  # Sheets에서 실제로 데이터를 가져왔는지
+    # 세션당 한 번만 Sheets에서 로드
+    if "initialized" in st.session_state:
+        return
 
-    # Sheets 데이터가 있으면 항상 최신 값으로 덮어쓰기, 없으면 기본값
+    persisted = load_persistent_state()
+
     def _load(key, default):
-        if has_sheets:
-            return persisted.get(key, default)
-        if key not in st.session_state:
-            return default
-        return st.session_state[key]
+        return persisted.get(key, default) if persisted else default
 
     snacks = _load("snacks", [])
     for s in snacks:
@@ -473,6 +471,8 @@ def init_state():
     if st.session_state.get("_reset_cat_pills", False):
         st.session_state.cat_pills = []
         st.session_state._reset_cat_pills = False
+
+    st.session_state.initialized = True
 
 CATEGORIES = ["단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩", "젤리/사탕", "건강한 맛", "탄산음료", "커피/차", "주스/드링크"]
 
