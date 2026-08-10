@@ -321,22 +321,26 @@ div[data-baseweb="input"], div[data-baseweb="base-input"] {{
 # ─────────────────────────────────────────────
 def search_naver_shopping(keyword, display=5):
     try:
-        api_key = st.secrets["GOOGLE_SEARCH_API_KEY"]
-        cx = st.secrets["GOOGLE_SEARCH_CX"]
+        client_id = st.secrets["NAVER_CLIENT_ID"]
+        client_secret = st.secrets["NAVER_CLIENT_SECRET"]
     except Exception:
-        return None, "Google Search API 키가 secrets에 없습니다."
-    url = "https://www.googleapis.com/customsearch/v1"
-    params = {"key": api_key, "cx": cx, "q": keyword, "num": display, "searchType": "image", "imgType": "photo", "safe": "active"}
+        return None, "NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 가 secrets에 없습니다."
     try:
-        res = requests.get(url, params=params, timeout=10)
+        res = requests.get(
+            "https://openapi.naver.com/v1/search/image",
+            headers={"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
+            params={"query": keyword, "display": display, "filter": "large"},
+            timeout=10,
+        )
         if res.status_code == 200:
             results = []
             for item in res.json().get("items", [])[:display]:
+                title = re.sub(r"<[^>]+>", "", item.get("title", keyword))
                 results.append({
-                    "name": item.get("title", keyword),
-                    "image": item.get("link", ""),
-                    "mall": item.get("displayLink", ""),
-                    "link": item.get("image", {}).get("contextLink", ""),
+                    "name": title,
+                    "image": item.get("thumbnail", item.get("link", "")),
+                    "link": item.get("link", ""),
+                    "mall": "",
                     "price": 0,
                 })
             return results, None
