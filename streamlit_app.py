@@ -319,40 +319,9 @@ div[data-baseweb="input"], div[data-baseweb="base-input"] {{
 # ─────────────────────────────────────────────
 # API 연동 (Google Custom Search)
 # ─────────────────────────────────────────────
-def search_naver_shopping(keyword, display=5):
-    try:
-        api_key = st.secrets["GOOGLE_SEARCH_API_KEY"]
-        cx = st.secrets["GOOGLE_SEARCH_CX"]
-    except Exception:
-        return None, "Google Search API 키가 secrets에 없습니다."
-
-    url = "https://www.googleapis.com/customsearch/v1"
-    params = {
-        "key": api_key,
-        "cx": cx,
-        "q": keyword + " 구매",
-        "num": display,
-        "searchType": "image",
-        "imgType": "photo",
-        "safe": "active",
-    }
-    try:
-        res = requests.get(url, params=params, timeout=10)
-        if res.status_code == 200:
-            items = res.json().get("items", [])
-            results = []
-            for item in items[:display]:
-                results.append({
-                    "name": item.get("title", keyword),
-                    "price": 0,
-                    "image": item.get("link", ""),
-                    "mall": item.get("displayLink", ""),
-                    "link": item.get("image", {}).get("contextLink", ""),
-                })
-            return results, None
-        return None, f"API 오류 (HTTP {res.status_code}): {res.text[:300]}"
-    except Exception as e:
-        return None, f"네트워크 오류: {str(e)}"
+def get_naver_shopping_url(keyword):
+    from urllib.parse import quote
+    return f"https://search.shopping.naver.com/search/all?query={quote(keyword)}"
 
 
 # ─────────────────────────────────────────────
@@ -366,7 +335,8 @@ def _get_gsheet():
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
         gc = gspread.authorize(creds)
         return gc.open_by_key(st.secrets["GSHEET_ID"]).sheet1
-    except Exception:
+    except Exception as e:
+        st.session_state["_gsheet_error"] = str(e)
         return None
 
 @st.cache_data(ttl=10)
@@ -458,6 +428,9 @@ def init_state():
 CATEGORIES = ["단맛", "짠맛", "매운맛", "쿠키/비스킷", "스낵/칩", "젤리/사탕", "건강한 맛", "탄산음료", "커피/차", "주스/드링크"]
 
 init_state()
+
+if st.session_state.get("_gsheet_error"):
+    st.warning(f"⚠️ Google Sheets 연결 오류: {st.session_state['_gsheet_error']}")
 
 # ═════════════════════════════════════════════
 # 레이아웃
@@ -573,41 +546,23 @@ if st.session_state.page == "main":
 
     with st.form(key="search_form", clear_on_submit=False):
         req_name = st.text_input("원하는 다과/음료명을 입력하세요", placeholder="예: 코카콜라 제로", key="req_name_input")
-        search_clicked = st.form_submit_button("🔍 검색하기", use_container_width=True)
+        col_s1, col_s2 = st.columns(2)
+        with col_s1:
+            search_clicked = st.form_submit_button("🔍 네이버쇼핑 보기", use_container_width=True)
+        with col_s2:
+            register_clicked = st.form_submit_button("✅ 요청 등록하기", use_container_width=True, type="primary")
 
     if search_clicked:
-        st.session_state.naver_results = []
-        if not req_name: st.warning("제품명을 입력한 뒤 검색해 주세요.")
+        if not req_name.strip():
+            st.warning("제품명을 입력한 뒤 검색해 주세요.")
         else:
-            st.session_state.search_input_val = req_name
-            with st.spinner("상품 데이터를 검색 중입니다..."):
-                results, err = search_naver_shopping(req_name)
-                if err: st.error(err)
-                elif results: st.session_state.naver_results = results
+            st.session_state.search_input_val = req_name.strip()
+            naver_url = get_naver_shopping_url(req_name.strip())
+            st.markdown(f'<a href="{naver_url}" target="_blank" style="display:block;text-align:center;padding:10px;background:#03C75A;color:white;border-radius:10px;text-decoration:none;font-size:14px;">🛒 네이버 쇼핑에서 "{req_name}" 검색결과 보기 →</a>', unsafe_allow_html=True)
 
-    if st.session_state.get("naver_results"):
-        st.caption("선택하면 바로 신규 간식 요청에 등록됩니다.")
-        for ci, item in enumerate(st.session_state.naver_results):
-            col_i1, col_i2 = st.columns([4, 1])
-            with col_i1:
-                st.markdown(f"""<div class="req-card" style="margin-bottom:4px;">
-                    <img src="{item['image']}" width="40" style="border-radius:6px; margin-right:10px;">
-                    <div style="font-size:12px;">{item['name'][:30]}</div>
-                </div>""", unsafe_allow_html=True)
-            with col_i2:
-                if st.button("선택", key=f"nv_{ci}"):
-                    existing = next((r for r in st.session_state.requests if r["name"] == item["name"]), None)
-                    cats_now = list(st.session_state.selected_cats)
-                    if existing: existing["votes"] += 1
-                    else: st.session_state.requests.append({"id": int(time.time() * 1000), "name": item["name"], "categories": cats_now, "votes": 1})
-                    persist("requests")
-                    st.session_state.selected_naver = None
-                    st.session_state.selected_cats = []
-                    st.session_state._reset_cat_pills = True
-                    st.session_state.search_input_val = ""
-                    st.session_state.naver_results = []
-                    st.toast(f"'{item['name']}' 요청이 등록되었습니다.")
-                    st.rerun()
+    if register_clicked:
+        if req_name.strip():
+            st.session_state.search_input_val = req_name.strip()
 
     st.markdown('<div class="or-divider"><span></span>OR<span></span></div>', unsafe_allow_html=True)
 
@@ -799,8 +754,8 @@ elif st.session_state.page == "admin":
                 if not any(s["name"] == r["name"] for s in st.session_state.snacks):
                     st.session_state.snacks.append({
                         "id": int(time.time() * 1000) + count,
-                        "name": r["name"], "categories": r["categories"],
-                        "image": fetch_snack_image(r["name"]),
+                        "name": r["name"], "categories": r.get("categories", []),
+                        "image": "",
                         "price": 2000, "likes": 0,
                     })
                     count += 1
