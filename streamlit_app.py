@@ -8,6 +8,11 @@ import requests
 from urllib.parse import quote
 import gspread
 from google.oauth2.service_account import Credentials
+try:
+    import pypdf
+    _PYPDF_OK = True
+except ImportError:
+    _PYPDF_OK = False
 
 # ─────────────────────────────────────────────
 # 페이지 설정
@@ -338,6 +343,34 @@ def fetch_snack_image(name):
     except Exception:
         pass
     return ""
+
+def parse_receipt_products(pdf_bytes):
+    """쿠팡 영수증 PDF에서 상품명을 추출하고 검색용으로 정제"""
+    if not _PYPDF_OK:
+        return [], "pypdf 패키지가 설치되지 않았습니다."
+    import io
+    reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+    names = []
+    for page in reader.pages:
+        text = page.extract_text() or ""
+        m = re.search(r"상품명\s+(.+?)(?=\n과세금액|\n비과세금액)", text, re.DOTALL)
+        if not m:
+            continue
+        raw = m.group(1).strip().replace("\n", " ")
+        # 첫 번째 쉼표 앞 부분만 사용 (용량·수량 제거)
+        name = raw.split(",")[0].strip()
+        # "포함 총 N건" 제거
+        name = re.sub(r"\s*포함\s*총\s*\d+건.*$", "", name)
+        # 끝의 수량 패턴 제거 (예: "2개", "12개", "1개")
+        name = re.sub(r"\s+\d+개$", "", name).strip()
+        # 따옴 같은 배송 브랜드 prefix 제거 (2글자 이하 단어)
+        name = re.sub(r"^[^\s]{1,2}\s+", "", name).strip()
+        if name and name not in names:
+            names.append(name)
+    if not names:
+        return [], "PDF에서 상품명을 찾지 못했습니다. 쿠팡 영수증 PDF인지 확인해 주세요."
+    return names, None
+
 
 def search_naver_shopping(keyword, display=5):
     try:
@@ -713,6 +746,57 @@ elif st.session_state.page == "admin":
 
         # ── 비치 품목 제어 ──
         st.markdown(f'<div class="sec-title"><img src="{svg_clip_check}"> 실시간 탕비실 비치 품목 제어</div>', unsafe_allow_html=True)
+
+        # ── 영수증 PDF 업로드로 자동 추가 ──
+        st.markdown(f'<div class="field-hint">🧾 쿠팡 영수증 PDF 업로드로 자동 추가</div>', unsafe_allow_html=True)
+        receipt_file = st.file_uploader("영수증 PDF", type=["pdf"], key="receipt_pdf", label_visibility="collapsed")
+        if receipt_file:
+            if st.button("📋 영수증에서 상품 불러오기", use_container_width=True, key="parse_receipt_btn"):
+                with st.spinner("영수증 분석 중..."):
+                    product_names, err = parse_receipt_products(receipt_file.read())
+                if err:
+                    st.error(err)
+                else:
+                    with st.spinner(f"상품 이미지 검색 중... (총 {len(product_names)}개)"):
+                        receipt_items = []
+                        for pname in product_names:
+                            results, _ = search_naver_shopping(pname, display=1)
+                            if results:
+                                receipt_items.append(results[0])
+                            else:
+                                receipt_items.append({"name": pname, "image": "", "link": "", "mall": "", "price": 0})
+                    st.session_state["receipt_items"] = receipt_items
+
+        if st.session_state.get("receipt_items"):
+            st.markdown("**추가할 항목을 선택하세요**")
+            selected = []
+            for ri, item in enumerate(st.session_state["receipt_items"]):
+                col_r1, col_r2, col_r3 = st.columns([0.5, 3, 1])
+                with col_r1:
+                    chk = st.checkbox("", key=f"rcpt_chk_{ri}", value=True)
+                with col_r2:
+                    img_tag = f'<img src="{item["image"]}" width="36" style="border-radius:6px;margin-right:8px;">' if item["image"] else "🍪 "
+                    st.markdown(f'<div style="display:flex;align-items:center;padding:4px 0">{img_tag}<span style="font-size:13px">{item["name"]}</span></div>', unsafe_allow_html=True)
+                with col_r3:
+                    if chk:
+                        selected.append(item)
+            if st.button("✅ 선택 항목 추가", use_container_width=True, key="add_receipt_items_btn", type="primary"):
+                added = 0
+                for item in selected:
+                    if not any(s["name"] == item["name"] for s in st.session_state.snacks):
+                        st.session_state.snacks.append({
+                            "id": int(time.time() * 1000) + added,
+                            "name": item["name"], "categories": [],
+                            "image": item["image"], "price": 0, "likes": 0,
+                        })
+                        added += 1
+                if added:
+                    persist("snacks")
+                    st.toast(f"{added}개 항목이 추가되었습니다!")
+                st.session_state["receipt_items"] = []
+                st.rerun()
+
+        st.markdown("---")
 
         st.markdown(f'<div class="field-hint"><img src="{svg_search}"> 다과 직접 검색 후 추가</div>', unsafe_allow_html=True)
         admin_search_name = st.text_input(
