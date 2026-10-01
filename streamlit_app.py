@@ -344,31 +344,80 @@ def fetch_snack_image(name):
         pass
     return ""
 
+def _clean_product_name(raw):
+    """상품명 문자열에서 검색용 핵심 이름만 추출"""
+    # 첫 번째 쉼표 앞 부분만 사용 (용량·수량 제거)
+    name = raw.split(",")[0].strip()
+    # "포함 총 N건" 제거
+    name = re.sub(r"\s*포함\s*총\s*\d+건.*$", "", name)
+    # 끝의 수량/용량 패턴 제거 (예: "2개", "12개", "1박스", "10봉")
+    name = re.sub(r"\s+\d+[개봉팩박스p]+$", "", name).strip()
+    # 괄호 내용 제거 (예: "(소비기한 2026.06.18)")
+    name = re.sub(r"\(소비기한[^)]*\)", "", name).strip()
+    return name.strip()
+
+
 def parse_receipt_products(pdf_bytes):
-    """쿠팡 영수증 PDF에서 상품명을 추출하고 검색용으로 정제"""
+    """쿠팡 영수증/거래명세서 PDF에서 상품명을 추출하고 검색용으로 정제.
+    두 가지 형식 지원:
+    - 카드 영수증: 페이지마다 '상품명 [이름]' 패턴
+    - 거래명세서: 'YYYY MM DD [이름] [수량] [금액]' 테이블 패턴
+    """
     if not _PYPDF_OK:
         return [], "pypdf 패키지가 설치되지 않았습니다."
     import io
     reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+    full_text = "\n".join(page.extract_text() or "" for page in reader.pages)
     names = []
-    for page in reader.pages:
-        text = page.extract_text() or ""
-        m = re.search(r"상품명\s+(.+?)(?=\n과세금액|\n비과세금액)", text, re.DOTALL)
-        if not m:
-            continue
-        raw = m.group(1).strip().replace("\n", " ")
-        # 첫 번째 쉼표 앞 부분만 사용 (용량·수량 제거)
-        name = raw.split(",")[0].strip()
-        # "포함 총 N건" 제거
-        name = re.sub(r"\s*포함\s*총\s*\d+건.*$", "", name)
-        # 끝의 수량 패턴 제거 (예: "2개", "12개", "1개")
-        name = re.sub(r"\s+\d+개$", "", name).strip()
-        # 따옴 같은 배송 브랜드 prefix 제거 (2글자 이하 단어)
-        name = re.sub(r"^[^\s]{1,2}\s+", "", name).strip()
-        if name and name not in names:
-            names.append(name)
+
+    # ── 거래명세서 형식 감지: '거래명세' 또는 '거래일시 상품명' 포함 ──
+    if "거래명세" in full_text or "거래일시" in full_text:
+        lines = full_text.splitlines()
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            # 날짜로 시작하는 줄 (예: "2026 06 05 상품명 ...")
+            date_m = re.match(r"^\d{4}\s+\d{2}\s+\d{2}\s+(.*)", line)
+            if date_m:
+                product_part = date_m.group(1).strip()
+                # 다음 줄이 날짜 없이 이어지는 경우 (멀티라인 상품명)
+                while i + 1 < len(lines):
+                    next_line = lines[i + 1].strip()
+                    # 다음 줄이 날짜 시작이거나 합계 줄이면 중단
+                    if re.match(r"^\d{4}\s+\d{2}\s+\d{2}", next_line):
+                        break
+                    if any(kw in next_line for kw in ["총 거래액", "배송비", "할인금액", "결제 금액"]):
+                        break
+                    # 숫자만으로 끝나는 줄(금액)이면 이미 포함됐을 것
+                    if re.match(r"^[\d,]+$", next_line):
+                        i += 1
+                        break
+                    product_part += " " + next_line
+                    i += 1
+                # 끝에서 "수량 금액" 패턴 제거 (예: "1 4,220" 또는 "1 4,220 결제 취소")
+                product_part = re.sub(r"\s+\d+\s+[\d,]+.*$", "", product_part).strip()
+                # 취소된 항목 건너뜀 ("결제 취소" 비고가 이미 같은 줄에 있을 경우)
+                if "결제 취소" in product_part:
+                    i += 1
+                    continue
+                name = _clean_product_name(product_part)
+                if name and name not in names:
+                    names.append(name)
+            i += 1
+    else:
+        # ── 카드 영수증 형식: 페이지마다 '상품명 [이름]' ──
+        for page in reader.pages:
+            text = page.extract_text() or ""
+            m = re.search(r"상품명\s+(.+?)(?=\n과세금액|\n비과세금액)", text, re.DOTALL)
+            if not m:
+                continue
+            raw = m.group(1).strip().replace("\n", " ")
+            name = _clean_product_name(raw)
+            if name and name not in names:
+                names.append(name)
+
     if not names:
-        return [], "PDF에서 상품명을 찾지 못했습니다. 쿠팡 영수증 PDF인지 확인해 주세요."
+        return [], "PDF에서 상품명을 찾지 못했습니다. 쿠팡 영수증이나 거래명세서 PDF인지 확인해 주세요."
     return names, None
 
 
